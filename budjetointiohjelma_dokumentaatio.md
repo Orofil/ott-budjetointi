@@ -1,9 +1,9 @@
-#Budjetointiohjelma
+# Budjetointiohjelma
 
 *Ohjelmistotuotanto II*
 
 *Ryhmä 5*
 
 ---
-##Sovelluksen käyttö
+## Sovelluksen käyttö
 
