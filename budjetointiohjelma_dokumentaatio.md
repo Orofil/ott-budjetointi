@@ -1,9 +1,19 @@
-# Budjetointiohjelma
+# Budjetointiohjelma 💸
 
-*Ohjelmistotuotanto II*
+*Ohjelmistotuotanto II - Ryhmä 5*
 
-*Ryhmä 5*
-
----
 ## Sovelluksen käyttö
 
+### Asennus
+
+
+
+### Käyttäminen
+
+## Koodin rakenne
+
+### Tietokanta
+
+
+
+### Muu koodi
