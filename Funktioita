@@ -1,0 +1,119 @@
+/* Tilitapahtuman vienti tietokantaan (tapahtuma transactions tauluun,
+tilinumerot accounts tauluun, positiivisen summan tapahtumien kategoriat income_categories tauluun 
+ja negatiivisen summan tapahtumien kategoriat expense_categories tauluun) */
+
+
+
+CREATE OR REPLACE FUNCTION add_transaction(
+    p_user_id UUID,
+    p_date DATE,
+    p_reference_number TEXT,
+    p_description TEXT,
+    p_amount DOUBLE PRECISION,
+    p_account_from TEXT,
+    p_account_to TEXT,
+    p_category TEXT
+) RETURNS UUID AS $$
+DECLARE
+    new_transaction_id UUID;
+    category_exists BOOLEAN;
+    account_exists BOOLEAN;
+BEGIN
+    -- Jos tapahtuman summa on negatiivinen, tarkistetaan expense_categories
+    IF p_amount < 0 THEN
+        -- Tarkistetaan, onko kategoria jo olemassa expense_categories taulussa
+        SELECT EXISTS (
+            SELECT 1 FROM public.expense_categories 
+            WHERE category_name = p_category AND user_id = p_user_id
+        ) INTO category_exists;
+
+        -- Jos kategoriaa ei löydy, lisätään se
+        IF NOT category_exists THEN
+            INSERT INTO public.expense_categories (user_id, category_name)
+            VALUES (p_user_id, p_category);
+        END IF;
+    END IF;
+
+    -- Jos tapahtuman summa on positiivinen, tarkistetaan income_categories
+    IF p_amount > 0 THEN
+        -- Tarkistetaan, onko kategoria jo olemassa income_categories taulussa
+        SELECT EXISTS (
+            SELECT 1 FROM public.income_categories 
+            WHERE category_name = p_category AND user_id = p_user_id
+        ) INTO category_exists;
+
+        -- Jos kategoriaa ei löydy, lisätään se
+        IF NOT category_exists THEN
+            INSERT INTO public.income_categories (user_id, category_name)
+            VALUES (p_user_id, p_category);
+        END IF;
+    END IF;
+
+    -- Tarkistetaan, onko tilinumero jo olemassa "accounts" taulussa (account_from)
+    SELECT EXISTS (
+        SELECT 1 FROM public.accounts WHERE account_number = p_account_from AND user_id = p_user_id
+    ) INTO account_exists;
+
+    -- Jos tilinumeroa ei löydy, lisätään se
+    IF NOT account_exists THEN
+        INSERT INTO public.accounts (user_id, account_number)
+        VALUES (p_user_id, p_account_from);
+    END IF;
+
+    -- Tarkistetaan, onko tilinumero jo olemassa "accounts" taulussa (account_to)
+    SELECT EXISTS (
+        SELECT 1 FROM public.accounts WHERE account_number = p_account_to AND user_id = p_user_id
+    ) INTO account_exists;
+
+    -- Jos tilinumeroa ei löydy, lisätään se
+    IF NOT account_exists THEN
+        INSERT INTO public.accounts (user_id, account_number)
+        VALUES (p_user_id, p_account_to);
+    END IF;
+
+    -- Lisätään tapahtuma
+    INSERT INTO public.transaction (
+        user_id, date, reference_number, description, amount, 
+        account_from, account_to, category
+    )
+    VALUES (
+        p_user_id, p_date, p_reference_number, p_description, p_amount, 
+        p_account_from, p_account_to, p_category
+    )
+    RETURNING transaction_id INTO new_transaction_id;
+
+    -- Palautetaan uuden tapahtuman UUID
+    RETURN new_transaction_id;
+END;
+$$ LANGUAGE plpgsql;
+
+
+/* Esimerkki tapahtuman lisäämisestä*/
+SELECT add_transaction(
+    '570f6c1f-0061-4c44-8770-b7ad15cc29a1',
+    '2024-03-06',
+    '9876543210',
+    'Palkka',
+    1500.00,  -- Positiivinen summa
+    'FI123456789',  -- Uusi tilinumero (account_from)
+    'FI987654321',  -- Uusi tilinumero (account_to)
+    'Palkkatulot'  -- Kategoria
+);
+
+
+SELECT add_transaction(
+    '570f6c1f-0061-4c44-8770-b7ad15cc29a1',
+    '2024-03-06',
+    '9876543211',
+    'Ruokakauppa',
+    -30.00,  -- Negatiivinen summa
+    'FI123456789',  -- Uusi tilinumero (account_from)
+    'FI987654321',  -- Uusi tilinumero (account_to)
+    'Ruokakulut'  -- Kategoria
+);
+
+
+
+
+
+
