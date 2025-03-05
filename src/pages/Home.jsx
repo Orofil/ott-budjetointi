@@ -4,10 +4,10 @@ import { Link } from "react-router-dom";
 function Home() {
   return (
     <div>
-      <h1>Welcome to the Budgeting App</h1> 
-      <Link to="/register">Register</Link>
+      <h1>Tervetuloa budjetointisovellukseen</h1> 
+      <Link to="/register">Rekisteröidy</Link>
       <br />
-      <Link to="/login">Login</Link>
+      <Link to="/login">Kirjaudu sisään</Link>
     </div>
   );
 }

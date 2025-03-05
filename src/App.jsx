@@ -18,7 +18,7 @@ function App() {
         // Jos käyttäjä on kirjautunut sisään
         if (!session.user.email_confirmed_at) {
           // Jos käyttäjän sähköpostiosoite ei ole vahvistettu
-          setMessage("Please confirm your email address."); // Ilmoitetaan käyttäjälle sähköpostin vahvistuksesta
+          setMessage("Vahvista sähköpostiosoitteesi."); // Ilmoitetaan käyttäjälle sähköpostin vahvistuksesta
           setUser(null);  // Estetään pääsy Dashboardiin, kunnes sähköposti on vahvistettu
         } else {
           setUser(session.user); // Asetetaan käyttäjän tiedot tilaan
