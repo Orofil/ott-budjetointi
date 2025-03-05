@@ -1,6 +1,5 @@
 /* Tilitapahtuman vienti tietokantaan (tapahtuma transactions tauluun,
-tilinumerot accounts tauluun, positiivisen summan tapahtumien kategoriat income_categories tauluun 
-ja negatiivisen summan tapahtumien kategoriat expense_categories tauluun) */
+tilinumerot accounts tauluun) */
 
 
 
@@ -12,43 +11,12 @@ CREATE OR REPLACE FUNCTION add_transaction(
     p_amount DOUBLE PRECISION,
     p_account_from TEXT,
     p_account_to TEXT,
-    p_category TEXT
+    p_category_id INTEGER
 ) RETURNS UUID AS $$
 DECLARE
     new_transaction_id UUID;
-    category_exists BOOLEAN;
     account_exists BOOLEAN;
 BEGIN
-    -- Jos tapahtuman summa on negatiivinen, tarkistetaan expense_categories
-    IF p_amount < 0 THEN
-        -- Tarkistetaan, onko kategoria jo olemassa expense_categories taulussa
-        SELECT EXISTS (
-            SELECT 1 FROM public.expense_categories 
-            WHERE category_name = p_category AND user_id = p_user_id
-        ) INTO category_exists;
-
-        -- Jos kategoriaa ei löydy, lisätään se
-        IF NOT category_exists THEN
-            INSERT INTO public.expense_categories (user_id, category_name)
-            VALUES (p_user_id, p_category);
-        END IF;
-    END IF;
-
-    -- Jos tapahtuman summa on positiivinen, tarkistetaan income_categories
-    IF p_amount > 0 THEN
-        -- Tarkistetaan, onko kategoria jo olemassa income_categories taulussa
-        SELECT EXISTS (
-            SELECT 1 FROM public.income_categories 
-            WHERE category_name = p_category AND user_id = p_user_id
-        ) INTO category_exists;
-
-        -- Jos kategoriaa ei löydy, lisätään se
-        IF NOT category_exists THEN
-            INSERT INTO public.income_categories (user_id, category_name)
-            VALUES (p_user_id, p_category);
-        END IF;
-    END IF;
-
     -- Tarkistetaan, onko tilinumero jo olemassa "accounts" taulussa (account_from)
     SELECT EXISTS (
         SELECT 1 FROM public.accounts WHERE account_number = p_account_from AND user_id = p_user_id
@@ -74,11 +42,19 @@ BEGIN
     -- Lisätään tapahtuma
     INSERT INTO public.transaction (
         user_id, date, reference_number, description, amount, 
-        account_from, account_to, category
+        account_from, account_to, expense_category_id, income_category_id
     )
     VALUES (
         p_user_id, p_date, p_reference_number, p_description, p_amount, 
-        p_account_from, p_account_to, p_category
+        p_account_from, p_account_to, 
+        CASE 
+            WHEN p_amount < 0 THEN p_category_id -- Käytetään expense category ID:tä
+            ELSE NULL 
+        END,
+        CASE 
+            WHEN p_amount > 0 THEN p_category_id -- Käytetään income category ID:tä
+            ELSE NULL 
+        END
     )
     RETURNING transaction_id INTO new_transaction_id;
 
@@ -88,30 +64,63 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-/* Esimerkki tapahtuman lisäämisestä*/
+-- Positiivinen summa
 SELECT add_transaction(
     '570f6c1f-0061-4c44-8770-b7ad15cc29a1',
     '2024-03-06',
     '9876543210',
     'Palkka',
     1500.00,  -- Positiivinen summa
-    'FI123456789',  -- Uusi tilinumero (account_from)
-    'FI987654321',  -- Uusi tilinumero (account_to)
-    'Palkkatulot'  -- Kategoria
+    'FI123456789',  -- Tilinumero (account_from)
+    'FI987654321',  -- Tilinumero (account_to)
+    1  -- Kategoria ID (tämä voi olla income_category taulusta, ei tarvitse olla käyttäjän oma)
 );
 
-
+-- Negatiivinen summa
 SELECT add_transaction(
     '570f6c1f-0061-4c44-8770-b7ad15cc29a1',
     '2024-03-06',
     '9876543211',
     'Ruokakauppa',
     -30.00,  -- Negatiivinen summa
-    'FI123456789',  -- Uusi tilinumero (account_from)
-    'FI987654321',  -- Uusi tilinumero (account_to)
-    'Ruokakulut'  -- Kategoria
+    'FI123456789',  -- Tilinumero (account_from)
+    'FI987654321',  -- Tilinumero (account_to)
+    2  -- Kategoria ID (tämä voi olla expense_category taulusta, ei tarvitse olla käyttäjän oma)
 );
 
+
+/* Uuden kategorian lisääminen*/
+
+CREATE OR REPLACE FUNCTION add_user_category(
+    p_user_id UUID,
+    p_category_name TEXT,
+    p_category_type INTEGER  -- 1 = income, 2 = expense
+) RETURNS VOID AS $$
+BEGIN
+    IF p_category_type = 1 THEN
+        -- Lisää uusi kategoria income_categories tauluun
+        INSERT INTO public.income_categories (user_id, category_name)
+        VALUES (p_user_id, p_category_name);
+    ELSIF p_category_type = 2 THEN
+        -- Lisää uusi kategoria expense_categories tauluun
+        INSERT INTO public.expense_categories (user_id, category_name)
+        VALUES (p_user_id, p_category_name);
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+
+SELECT add_user_category(
+    '570f6c1f-0061-4c44-8770-b7ad15cc29a1',
+    'Uusi tulo kategoria',
+    1  -- Income
+);
+
+SELECT add_user_category(
+    '570f6c1f-0061-4c44-8770-b7ad15cc29a1',
+    'Uusi meno kategoria',
+    2  -- Expense
+);
 
 
 
