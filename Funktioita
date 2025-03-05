@@ -89,6 +89,39 @@ SELECT add_transaction(
 );
 
 
+/* Uuden kategorian lisääminen*/
+
+CREATE OR REPLACE FUNCTION add_user_category(
+    p_user_id UUID,
+    p_category_name TEXT,
+    p_category_type INTEGER  -- 1 = income, 2 = expense
+) RETURNS VOID AS $$
+BEGIN
+    IF p_category_type = 1 THEN
+        -- Lisää uusi kategoria income_categories tauluun
+        INSERT INTO public.income_categories (user_id, category_name)
+        VALUES (p_user_id, p_category_name);
+    ELSIF p_category_type = 2 THEN
+        -- Lisää uusi kategoria expense_categories tauluun
+        INSERT INTO public.expense_categories (user_id, category_name)
+        VALUES (p_user_id, p_category_name);
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+
+SELECT add_user_category(
+    '570f6c1f-0061-4c44-8770-b7ad15cc29a1',
+    'Uusi tulo kategoria',
+    1  -- Income
+);
+
+SELECT add_user_category(
+    '570f6c1f-0061-4c44-8770-b7ad15cc29a1',
+    'Uusi meno kategoria',
+    2  -- Expense
+);
+
 
 
 
