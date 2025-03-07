@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import TransactionImport from "./pages/TransactionImport";
 
 function App() {
   const [user, setUser] = useState(null); 
@@ -43,6 +44,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/transaction-import" element={<TransactionImport />} />
         
         {/* Suojattu reitti */}
         <Route

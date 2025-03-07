@@ -18,9 +18,14 @@ function Dashboard() {
     }
   };
 
+  const navigateToTransaction = async () => {
+    navigate("/transaction-import");
+  };
+
   return (
     <div>
-      <h2>Dashboard</h2> 
+      <h2>Etusivu</h2> 
+      <button onClick={navigateToTransaction}>Lisää pankkitapahtuma</button>
       <button onClick={handleLogout}>Kirjaudu ulos</button> 
     </div>
   );
