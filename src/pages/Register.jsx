@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import supabase from "../config/supabaseClient";
 import { Link } from "react-router-dom";
+import { AuthWeakPasswordError, isAuthWeakPasswordError } from "@supabase/supabase-js";
 
 function Register() {
   const [email, setEmail] = useState("");
@@ -17,7 +18,10 @@ function Register() {
       password: password,
     });
 
-    if (error) {
+    if (isAuthWeakPasswordError(error)) {
+      setMessage("Salasana on liian lyhyt. Sen on oltava vähintään 6 merkkiä.");
+      return;
+    } else if (error) {
       console.error("Supabase auth signUp error:", error);
       setMessage("Tapahtui virhe, yritä uudelleen.");
       return;
