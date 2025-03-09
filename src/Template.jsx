@@ -16,7 +16,6 @@ function Template() {
       <div className="container">
         {/* Sivupalkki/Navigaatio, linkit eivät nyt johda minnekkään */}
         <div className="sidebar">
-          <a></a>
           <Link to="/">Kotisivu</Link>
           <Link to="/">Tapahtumien tuonti</Link>
           <Link to="/">Budjettien hallinta</Link>
