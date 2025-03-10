@@ -18,7 +18,7 @@ export default function CategoryDropdown({ categoryType }) {
       // const { data, error } = await supabase.from(categoryType).select("*")
       //   .or(`is_default.eq.TRUE,user_id.eq${userID}`);
       setLoading(true);
-      const { data, error } = await supabase.from(categoryType).select("*");
+      const { data, error } = await supabase.from(categoryType).select();
       if (error) {
         console.error("Error getting categories:", error);
       } else {

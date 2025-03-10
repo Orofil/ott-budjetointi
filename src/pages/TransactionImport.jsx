@@ -1,5 +1,5 @@
 import React, { useActionState, useState } from "react";
-import { useNavigate } from "react-router-dom"; 
+import { Link } from "react-router-dom"; 
 import CategoryDropdown from "../components/CategoryDropdown";
 import { TransactionCategory } from "../constants/TransactionCategory";
 import { createTransaction } from "../actions/Transactions";
@@ -10,14 +10,10 @@ function TransactionImport() {
   const [formState, formAction, isPending] = useActionState(createTransaction, null);
   // FIXME preventDefaultia ei ole tätä käytettäessä, joten inputit tyhjentyvät aina vaikka inputit eivät olisi oikein
 
-  const navigateBack = async () => {
-    navigate("/dashboard");
-  };
-
   return (
     <div>
       <h2>Lisää pankkitapahtuma</h2>
-      <button type="button" onClick={navigateBack}>Takaisin</button>
+      <Link to="/dashboard">Takaisin</Link>
       <form action={formAction}>
         <label>
           Tapahtuman tyyppi: 

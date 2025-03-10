@@ -55,3 +55,21 @@ export const createTransaction = async (currentState, formData) => {
   }
   return message;
 };
+
+export const loadTransactions = async (offset, pageLimit) => {
+  // Haetaan kirjautuneen käyttäjän tiedot
+  const { data: { user } } = await supabase.auth.getUser(); // TODO tätä ei kannata ehkä hakea joka kerta
+
+  const { data, error } = await supabase
+    .from("transaction")
+    .select()
+    .eq("user_id", user.id)
+    .range(offset, offset + pageLimit + 1);
+  
+  console.log(data); // TEMP
+  if (error) {
+    console.error("Error getting transactions:", error);
+    return null;
+  }
+  return data;
+};

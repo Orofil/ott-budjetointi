@@ -1,9 +1,12 @@
 import React from "react";
 import { useNavigate } from "react-router-dom"; 
 import supabase from "../config/supabaseClient"; 
+import TransactionList from "../components/TransactionList";
+import CategoryDropdown from "../components/CategoryDropdown";
+import { TransactionCategory } from "../constants/TransactionCategory";
 
 function Dashboard() {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     // Kirjaudu ulos Supabasesta
@@ -24,7 +27,10 @@ function Dashboard() {
 
   return (
     <div>
-      <h2>Etusivu</h2> 
+      <h2>Etusivu</h2>
+      <h3>Tapahtumat</h3>
+      <TransactionList />
+      <hr />
       <button onClick={navigateToTransaction}>Lisää pankkitapahtuma</button>
       <button onClick={handleLogout}>Kirjaudu ulos</button> 
     </div>
