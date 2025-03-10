@@ -1,56 +1,65 @@
-import React, { useState } from "react";
+import React, { useActionState, useState } from "react";
 import { useNavigate } from "react-router-dom"; 
 import CategoryDropdown from "../components/CategoryDropdown";
-import { TransactionCategory } from "../constants/transactionCategory";
+import { TransactionCategory } from "../constants/TransactionCategory";
+import { createTransaction } from "../actions/Transactions";
 
 function TransactionImport() {
   const navigate = useNavigate();
   const [transactionCategory, setTransactionCategory] = useState(TransactionCategory.EXPENSE);
+  const [formState, formAction, isPending] = useActionState(createTransaction, null);
+  // FIXME preventDefaultia ei ole tätä käytettäessä, joten inputit tyhjentyvät aina vaikka inputit eivät olisi oikein
 
   const navigateBack = async () => {
     navigate("/dashboard");
-  };
-
-  const createTransaction = async () => {
-    // TODO data tietokantaan
   };
 
   return (
     <div>
       <h2>Lisää pankkitapahtuma</h2>
       <button type="button" onClick={navigateBack}>Takaisin</button>
-      <form>
-        <label>Tapahtuman tyyppi</label>
-        <select onChange={(e) => setTransactionCategory(e.target.value)}>
-          <option value={TransactionCategory.EXPENSE}>Kulu</option>
-          <option value={TransactionCategory.INCOME}>Tulo</option>
-        </select>
+      <form action={formAction}>
+        <label>
+          Tapahtuman tyyppi: 
+          <select name="type" onChange={(e) => setTransactionCategory(e.target.value)}>
+            <option value={TransactionCategory.EXPENSE}>Kulu</option>
+            <option value={TransactionCategory.INCOME}>Tulo</option>
+          </select>
+        </label>
         <br />
-        <label>Määrä</label>
-        <input type="number"></input>
+        <label>
+          Summa: <input type="number" name="amount" />
+        </label>
         <br />
-        <label>Saaja/Maksaja</label>
-        <input type="text"></input>
+        <label>
+          Saaja/Maksaja: <input type="text" name="payee-payer" />
+        </label>
         <br />
-        <label>Päivämäärä</label>
-        <input type="date"></input>
+        <label>
+          Päivämäärä: <input type="date" name="date" />
+        </label>
         <br />
-        <label>Viitenumero</label>
-        <input type="number"></input>
+        <label>
+          Viitenumero: <input type="number" name="reference-number" />
+        </label>
         <br />
-        <label>Kuvaus</label>
-        <textarea></textarea>
+        <label>
+          Kuvaus: <textarea name="description" />
+        </label>
         <br />
-        <label>Tili</label>
-        <input type="text"></input>
+        <label>
+          Tili: <input type="text" name="account" />
+        </label>
         <br />
-        <label>Kategoria</label>
-        <CategoryDropdown categoryType={transactionCategory} />
+        <label>
+          Kategoria: <CategoryDropdown categoryType={transactionCategory} />
+        </label>
         <br />
-        <label>Päivämäärä</label>
-        <input type="date"></input>
+        <button type="submit" disabled={isPending}>
+          {isPending ? "Lisätään..." : "Lisää"}
+        </button>
         <br />
-        <button type="submit" onClick={createTransaction}>Lisää</button> 
+        {formState && <span style={{color: "red"}}>{formState}</span>}
       </form>
     </div>
   );

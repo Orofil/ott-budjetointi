@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import supabase from "../config/supabaseClient";
-import { TransactionCategory } from "../constants/transactionCategory";
+import { TransactionCategory } from "../constants/TransactionCategory";
 
 export default function CategoryDropdown({ categoryType }) {
   const [categories, setCategories] = useState([]);
@@ -14,6 +14,9 @@ export default function CategoryDropdown({ categoryType }) {
       }
       
       // Haetaan kaikki kategoriat
+      // TODO hae vain kirjautuneen käyttäjän kategoriat ja is_default kategoriat
+      // const { data, error } = await supabase.from(categoryType).select("*")
+      //   .or(`is_default.eq.TRUE,user_id.eq${userID}`);
       setLoading(true);
       const { data, error } = await supabase.from(categoryType).select("*");
       if (error) {
@@ -28,7 +31,7 @@ export default function CategoryDropdown({ categoryType }) {
   }, [categoryType]); // Päivitetään kun categoryType muuttuu
 
   return (
-    <select disabled={loading}>
+    <select disabled={loading} name="category">
       <option value="">Valitse kategoria</option>
       {categories.map((c) => (
         <option key={c.id} value={c.id}>
