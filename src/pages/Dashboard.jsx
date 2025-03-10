@@ -24,6 +24,9 @@ function Dashboard() {
   const navigateToTransaction = async () => {
     navigate("/transaction-import");
   };
+  const navigateToBudgets = async () => {
+    navigate("/budgets")
+  }
 
   return (
     <div>
@@ -32,6 +35,7 @@ function Dashboard() {
       <TransactionList />
       <hr />
       <button onClick={navigateToTransaction}>Lisää pankkitapahtuma</button>
+      <button onClick={navigateToBudgets}>Budjetit</button>
       <button onClick={handleLogout}>Kirjaudu ulos</button> 
     </div>
   );
