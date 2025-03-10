@@ -20,6 +20,8 @@
 4. Suorita ```npm run dev```
 5. Avaa komentokehotteeseen ilmestynyt osoite, joka alkaa ```http://localhost:```...
 
+Jatkossa riittää tehdä vain vaiheet 4 ja 5.
+
 ### Tietokanta
 
 

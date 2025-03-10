@@ -5,7 +5,6 @@ import { TransactionCategory } from "../constants/TransactionCategory";
 import { createTransaction } from "../actions/Transactions";
 
 function TransactionImport() {
-  const navigate = useNavigate();
   const [transactionCategory, setTransactionCategory] = useState(TransactionCategory.EXPENSE);
   const [formState, formAction, isPending] = useActionState(createTransaction, null);
   // FIXME preventDefaultia ei ole tätä käytettäessä, joten inputit tyhjentyvät aina vaikka inputit eivät olisi oikein

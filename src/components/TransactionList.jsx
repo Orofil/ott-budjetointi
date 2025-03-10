@@ -19,7 +19,7 @@ export default function TransactionList() {
     setOffset((prev) => prev + PAGE_LIMIT);
     setHasMore(data[-1] != null);
     setLoading(false);
-    console.log("Offset lopussa:", offset);
+    console.log("Offset lopussa:", offset); // TEMP
     /*
     FIXME offsetin arvo ei päivity, ja tämä funktio suoritetaan jostain syystä monta kertaa vaikka sen pitäisi suorittua vain kerran sivun latautuessa ja sitten "Lataa lisää"-painikkeella
     Taitaa aiheuttaa ongelmia kun funktio on async, koska tulostusten perusteella sitä suoritetaan 2x rinnakkain
