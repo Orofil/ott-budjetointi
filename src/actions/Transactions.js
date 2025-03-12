@@ -64,11 +64,10 @@ export const loadTransactions = async (offset, pageLimit) => {
     .from("transaction")
     .select()
     .eq("user_id", user.id)
-    .range(offset, offset + pageLimit + 1);
+    .range(offset, offset + pageLimit);
   
-  console.log(data); // TEMP
   if (error) {
-    console.error("Error getting transactions:", error);
+    console.error("Virhe tapahtumien haussa:", error);
     return null;
   }
   return data;

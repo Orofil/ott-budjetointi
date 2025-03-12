@@ -13,7 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import TransactionImport from "./pages/TransactionImport";
 import Budgets from "./pages/Budgets";
 import CreateBudgetPage from "./pages/CreateBudget";
-import HeaderNav from "./components/HeaderPlusNav";
+import HeaderNav from "./components/HeaderNav";
 
 function App() {
   const [user, setUser] = useState(null);
