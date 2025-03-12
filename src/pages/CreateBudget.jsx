@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { loadCategories } from '../actions/Categories';
+import { TransactionCategory } from '../constants/TransactionCategory';
 
 const CreateBudgetPage = () => {
   const [budgetName, setBudgetName] = useState('');
@@ -14,9 +16,8 @@ const CreateBudgetPage = () => {
   // Hakee kategoriat (sisältäen oletuskategoriat ja käyttäjän lisäämät)
   useEffect(() => {
     const fetchCategories = async () => {
-      const response = await fetch('/api/categories'); // Hae kategoriat API:sta
-      const data = await response.json();
-      setCategories(data); // Aseta kategoriat tilaan
+      let c = await loadCategories(TransactionCategory.EXPENSE); // TODO tällä hetkellä hakee vain kulujen kategoriat
+      if (c != null) setCategories(c); // Aseta kategoriat tilaan
     };
 
     fetchCategories();
@@ -112,7 +113,7 @@ const CreateBudgetPage = () => {
             <option value="all">Kaikki kategoriat</option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
-                {category.name}
+                {category.category_name}
               </option>
             ))}
           </select>

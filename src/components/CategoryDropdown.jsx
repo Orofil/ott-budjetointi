@@ -1,33 +1,18 @@
 import React, { useEffect, useState } from "react";
-import supabase from "../config/supabaseClient";
-import { TransactionCategory } from "../constants/TransactionCategory";
+import { loadCategories } from "../actions/Categories";
 
 export default function CategoryDropdown({ categoryType }) {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const loadExpenseCategories = async () => {
-      // Jatketaan vain jos kategorian tyyppi löytyy TransactionCategorysta
-      if (!Object.values(TransactionCategory).includes(categoryType)) {
-        return;
-      }
-      
-      // Haetaan kaikki kategoriat
-      // TODO hae vain kirjautuneen käyttäjän kategoriat ja is_default kategoriat
-      // const { data, error } = await supabase.from(categoryType).select("*")
-      //   .or(`is_default.eq.TRUE,user_id.eq${userID}`);
+    const fetchCategories = async () => {
       setLoading(true);
-      const { data, error } = await supabase.from(categoryType).select();
-      if (error) {
-        console.error("Error getting categories:", error);
-      } else {
-        setCategories(data);
-      }
+      let c = await loadCategories(categoryType);
+      if (c != null) setCategories(c);
       setLoading(false);
     };
-
-    loadExpenseCategories();
+    fetchCategories();
   }, [categoryType]); // Päivitetään kun categoryType muuttuu
 
   return (

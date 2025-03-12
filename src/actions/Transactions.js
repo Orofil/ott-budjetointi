@@ -58,7 +58,7 @@ export const createTransaction = async (currentState, formData) => {
 
 export const loadTransactions = async (offset, pageLimit) => {
   // Haetaan kirjautuneen käyttäjän tiedot
-  const { data: { user } } = await supabase.auth.getUser(); // TODO tätä ei kannata ehkä hakea joka kerta
+  const { data: { user } } = await supabase.auth.getUser();
 
   const { data, error } = await supabase
     .from("transaction")
