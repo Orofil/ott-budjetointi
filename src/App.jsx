@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import supabase from "./config/supabaseClient";
+import {
+  Container,
+  Row,
+} from "react-bootstrap";
 
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -9,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import TransactionImport from "./pages/TransactionImport";
 import Budgets from "./pages/Budgets";
 import CreateBudgetPage from "./pages/CreateBudget";
+import HeaderNav from "./components/HeaderPlusNav";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -43,22 +48,31 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/transaction-import" element={<TransactionImport />} />
-        <Route path="/budgets" element={<Budgets />} />
-        <Route path="/create-budget" element={<CreateBudgetPage />} />
+      <Container fluid className="p-0">
+        <HeaderNav />
 
-        {/* Suojattu reitti */}
-        <Route
-          path="/dashboard"
-          element={user ? <Dashboard /> : <Navigate to="/login" />} // Jos käyttäjä on kirjautunut sisään, näytetään Dashboard, muuten ohjataan kirjautumissivulle
-        />
-      </Routes>
+        {/* Pääsisältöalue */}
+        <Row className="min-vh-100">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/transaction-import" element={<TransactionImport />} />
+            <Route path="/budgets" element={<Budgets />} />
+            <Route path="/create-budget" element={<CreateBudgetPage />} />
 
-      {message && <div className="message">{message}</div>}
+            {/* Suojattu reitti */}
+            <Route
+              path="/dashboard"
+              element={user ? <Dashboard /> : <Navigate to="/login" />} // Jos käyttäjä on kirjautunut sisään, näytetään Dashboard, muuten ohjataan kirjautumissivulle
+            />
+          </Routes>
+
+          {message && <div className="message">{message}</div>}
+        </Row>
+        
+      </Container>
+      
     </BrowserRouter>
   );
 }
