@@ -1,11 +1,11 @@
 import supabase from "../config/supabaseClient";
-import { TransactionCategory } from "../constants/TransactionCategory";
+import { TransactionCategory, findTransactionCategory } from "../constants/TransactionCategory";
 
 export const createTransaction = async (currentState, formData) => {
   if (formData == null) return;
 
   console.log(formData);
-  const type = formData.get("type");
+  const type = findTransactionCategory(formData.get("type"));
   const amount = formData.get("amount");
   const payeePayer = formData.get("payee-payer");
   const date = formData.get("date");

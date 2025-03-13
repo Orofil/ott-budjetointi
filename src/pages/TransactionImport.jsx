@@ -1,9 +1,10 @@
 import React, { useActionState, useState } from "react";
 import { Link } from "react-router-dom";
 import CategoryDropdown from "../components/CategoryDropdown";
-import { TransactionCategory } from "../constants/TransactionCategory";
+import { findTransactionCategory, TransactionCategory } from "../constants/TransactionCategory";
 import { createTransaction } from "../actions/Transactions";
 import "bootstrap/dist/css/bootstrap.min.css";
+import TransactionFileImport from "../components/TransactionFileImport";
 
 function TransactionImport() {
   const [transactionCategory, setTransactionCategory] = useState(
@@ -24,10 +25,10 @@ function TransactionImport() {
           Tapahtuman tyyppi:
           <select
             name="type"
-            onChange={(e) => setTransactionCategory(e.target.value)}
+            onChange={(e) => setTransactionCategory(findTransactionCategory(e.target.value))}
           >
-            <option value={TransactionCategory.EXPENSE}>Kulu</option>
-            <option value={TransactionCategory.INCOME}>Tulo</option>
+            <option value={TransactionCategory.EXPENSE.id}>Kulu</option>
+            <option value={TransactionCategory.INCOME.id}>Tulo</option>
           </select>
         </label>
         <br />
@@ -65,6 +66,11 @@ function TransactionImport() {
         <br />
         {formState && <span style={{ color: "red" }}>{formState}</span>}
       </form>
+      
+      <hr />
+      <h3>Tuo tiedostosta</h3>
+      <p>Tiedoston on oltava .csv-muodossa.</p>
+      <TransactionFileImport />
     </div>
   );
 }
