@@ -61,7 +61,7 @@ export const loadTransactions = async (offset, pageLimit) => {
   const { data: { user } } = await supabase.auth.getUser();
 
   const { data, error } = await supabase
-    .from("transaction")
+    .from("all_transactions")
     .select()
     .eq("user_id", user.id)
     .range(offset, offset + pageLimit);
