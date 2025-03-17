@@ -1,13 +1,10 @@
-import {
-  Container,
-  Navbar,
-  Nav,
-  Offcanvas,
-  Button,
-} from "react-bootstrap";
+import { Container, Navbar, Nav, Offcanvas, Button } from "react-bootstrap";
+import { Link } from "react-router-dom";
 
 const HeaderNav = () => (
-  <Container fluid className="p-0"> {/* TODO en saanut toimimaan ilman ylimääräistä Containeria tässä, poista kommentti jos asialla ei ole väliä */}
+  <Container fluid className="p-0">
+    {" "}
+    {/* TODO en saanut toimimaan ilman ylimääräistä Containeria tässä, poista kommentti jos asialla ei ole väliä */}
     {/* Yläpalkki - Sisältää navigaation ja profiililinkin */}
     <Navbar
       bg="dark"
@@ -30,12 +27,17 @@ const HeaderNav = () => (
           <Offcanvas.Title id="offcanvasNavbarLabel">Valikko</Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body>
-          {/* Placeholder navigointilinkit - eivät johda vielä mihinkään */}
+          {/* Navigointilinkit */}
           <Nav className="flex-column">
-            <Nav.Link href="#">Kotisivu</Nav.Link>
-            <Nav.Link href="#">Tapahtumien tuonti</Nav.Link>
-            <Nav.Link href="#">Budjettien hallinta</Nav.Link>
-            <Nav.Link href="#">Asetukset</Nav.Link>
+            <Nav.Link as={Link} to="/dashboard">
+              Kotisivu
+            </Nav.Link>
+            <Nav.Link as={Link} to="/transaction-import">
+              Tapahtumien tuonti
+            </Nav.Link>
+            <Nav.Link as={Link} to="/budgets">
+              Budjettien hallinta
+            </Nav.Link>
           </Nav>
         </Offcanvas.Body>
       </Navbar.Offcanvas>

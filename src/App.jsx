@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import supabase from "./config/supabaseClient";
-import {
-  Container,
-  Row,
-} from "react-bootstrap";
+import { Container, Row } from "react-bootstrap";
 
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -57,6 +54,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/transaction-import" element={<TransactionImport />} />
             <Route path="/budgets" element={<Budgets />} />
             <Route path="/create-budget" element={<CreateBudgetPage />} />
@@ -70,9 +68,7 @@ function App() {
 
           {message && <div className="message">{message}</div>}
         </Row>
-        
       </Container>
-      
     </BrowserRouter>
   );
 }
