@@ -7,19 +7,6 @@ export const loadCategories = async (categoryType) => {
     console.log("Virheellinen kategoriatyyppi:", categoryType);
     return null;
   }
-  
-  // let categoryNumbers;
-  // switch (categoryType) {
-  //   case EXPENSE:
-  //     categoryNumbers = [0];
-  //     break;
-  //   case INCOME:
-  //     categoryNumbers = [1];
-  //     break;
-  //   case ALL:
-  //     categoryNumbers = [0, 1];
-  //     break;
-  // }
 
   const { data: { user } } = await supabase.auth.getUser();
 

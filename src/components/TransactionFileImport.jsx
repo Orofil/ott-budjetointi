@@ -5,6 +5,7 @@ import { TransactionCategory } from "../constants/TransactionCategory";
 import supabase from "../config/supabaseClient";
 import { Button } from "react-bootstrap";
 import { loadAccounts } from "../actions/Accounts";
+import AccountDropdown from "./AccountDropdown";
 
 const TransactionFileImport = () => {
   const [tableData, setTableData] = useState([]);
@@ -84,11 +85,14 @@ const TransactionFileImport = () => {
             if (!row[columnIndexes.get("account")]) {
               account = row[columnIndexes.get("account2")];
             }
+            // let accountNumber = accounts.find((a) => a.account_number == accountNumber).id; // FIXME ongelma: accounts is undefined
+            // if (!accountNumber) accountNumber = "";
 
             sortedData.push({
               date: date,
               amount: row[columnIndexes.get("amount")].replace(",", "."),
-              account: account,
+              account_number: account, // Tilikentän tekstiä varten
+              account: "", // TODO tähän tulisi accountNumber ylempää
               name: row[columnIndexes.get("name")],
               reference_number: row[columnIndexes.get("reference_number")],
               category: "", // TODO tähän kategoria-arvaukset
@@ -131,10 +135,8 @@ const TransactionFileImport = () => {
 
     // Pakollisten tietojen tarkistus
     // TODO puuttuvista tiedoista joku ilmoitus
-    console.log(tableData.length);
     for (let i = 0; i < tableData.length; i++) {
       let row = tableData[i];
-      console.log(row);
       if (!row.date || row.date > new Date().toISOString().substring(0,10) || !row.amount || Number(row.amount) == 0 || !row.account || !row.category) {
         setPending(false);
         return;
@@ -148,7 +150,7 @@ const TransactionFileImport = () => {
         date: row.date,
         reference_number: row.reference_number,
         description: row.description,
-        amount: row.amount.toString().slice(0, -1), // Tallennetaan tietokantaan ilman miinusta
+        amount: row.amount.toString().slice(1), // Tallennetaan tietokantaan ilman miinusta
         account_to: row.name,
         account_from: row.account,
         category_id: row.category
@@ -159,8 +161,10 @@ const TransactionFileImport = () => {
       setPending(false);
       return;
     }
-    console.log("Lisätty kulut:", data); // TEMP
 
+    console.log(tableData
+      .filter((row) => (!row.amount.startsWith("-"))));
+    // TODO ei toimi
     const { data1, error1 } = await supabase.from("income_transactions").insert(tableData
       .filter((row) => (!row.amount.startsWith("-")))
       .map((row) => ({
@@ -178,7 +182,6 @@ const TransactionFileImport = () => {
       setPending(false);
       return;
     }
-    console.log("Lisätty tulot:", data1); // TEMP
 
     setPending(false);
   };
@@ -243,28 +246,9 @@ const TransactionFileImport = () => {
                           </select>
                         );
                       case "account":
-                        if (accounts.some((a) => a.account_number == row[c])) { // Jos tilinumerolle on jo tehty tili tietokantaan
-                          return (
-                            <select onChange={(e) => handleInput(rowIndex, c, e.target.value)} value={row[c]}>
-                              <option value=""></option>
-                              {accounts.map((c) => (
-                                <option key={c.id} value={c.account_number}>
-                                  {c.account_name ? `${c.account_name} (${c.account_number})` : c.account_number}
-                                </option>
-                              ))}
-                            </select>
-                          );
-                        } else { // Jos tilinumerolle ei ole tehty tiliä tietokantaan
-                          return (
-                          <div>
-                            <input
-                            type="text"
-                            value={row[c]}
-                            onChange={(e) => handleInput(rowIndex, c, e.target.value)} />
-                            <Button>+</Button> {/* TODO tilin luonti */}
-                          </div>
-                          );
-                        }
+                        return <AccountDropdown
+                        value={row["account_number"]} // TODO tämän näyttämän tekstin pitäisi muuttua kun value muuttuu
+                        onChange={(e) => handleInput(rowIndex, c, e)} />
                       case "name":
                       case "description":
                       default:
