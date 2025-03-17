@@ -2,24 +2,38 @@ import React, { useState } from "react";
 import Papa from "papaparse";
 import { loadCategories } from "../actions/Categories";
 import { TransactionCategory } from "../constants/TransactionCategory";
+import supabase from "../config/supabaseClient";
+import { Button } from "react-bootstrap";
+import { loadAccounts } from "../actions/Accounts";
 
 const TransactionFileImport = () => {
   const [tableData, setTableData] = useState([]);
-  const [columnIndexes, setColumnIndexes] = useState(new Map());
+  const columnNames = {
+    date: "Päivämäärä",
+    amount: "Summa",
+    account: "Oma tili",
+    name: "Toinen osapuoli", // TODO vähän ehkä huonot nimet vielä
+    reference_number: "Viitenumero",
+    category: "Kategoria",
+    description: "Kuvaus"
+  };
+  const columnPositions = [ // Sarakkeet siinä järjestyksessä missä ne näytetään taulukossa
+    "date",
+    "amount",
+    "account",
+    "name",
+    "reference_number",
+    "category",
+    "description"
+  ]
+  const [columnIndexes, setColumnIndexes] = useState(new Map()); // Sarakkeiden sijainnit alkuperäisessä tiedostossa // TODO näiden ei ehkä tarvitse olla useState, ja voisi olla fileUploadAndParsen sisällä
   const updateColumnIndex = (k,v) => {
     setColumnIndexes(new Map(columnIndexes.set(k,v)));
   }
-  const columns = [
-    "Päivämäärä",
-    "Summa",
-    "Oma tili",
-    "Toinen osapuoli", // TODO vähän ehkä huonot nimet vielä, jos muutetaan näitä niin muistetaan muuttaa kaikkiin kohtiin missä käytetään tässä tiedostossa
-    "Viitenumero",
-    "Kategoria",
-    "Kuvaus"
-  ];
   const [expenseCategories, setExpenseCategories] = useState();
   const [incomeCategories, setIncomeCategories] = useState();
+  const [accounts, setAccounts] = useState();
+  const [isPending, setPending] = useState();
 
   const fileUploadAndParse = async (event) => {
     const file = event.target.files[0];
@@ -27,6 +41,7 @@ const TransactionFileImport = () => {
 
     setExpenseCategories(await loadCategories(TransactionCategory.EXPENSE));
     setIncomeCategories(await loadCategories(TransactionCategory.INCOME));
+    setAccounts(await loadAccounts());
 
     // Luetaan tiedosto
     Papa.parse(file, {
@@ -36,22 +51,22 @@ const TransactionFileImport = () => {
             // Löydetään datan halutut sarakkeet otsikkorivin nimien perusteella
             switch (result.data[0][i]) {
               case "Kirjauspäivä":
-                updateColumnIndex("Päivämäärä", i);
+                updateColumnIndex("date", i);
                 break;
               case "Määrä":
-                updateColumnIndex("Summa", i);
+                updateColumnIndex("amount", i);
                 break;
               case "Maksaja":
-                updateColumnIndex("Oma tili", i);
+                updateColumnIndex("account", i);
                 break;
               case "Maksunsaaja":
-                updateColumnIndex("Oma tili2", i);
+                updateColumnIndex("account2", i);
                 break;
               case "Nimi":
-                updateColumnIndex("Toinen osapuoli", i);
+                updateColumnIndex("name", i);
                 break;
               case "Viitenumero":
-                updateColumnIndex("Viitenumero", i);
+                updateColumnIndex("reference_number", i);
                 break;
             }
           }
@@ -61,24 +76,24 @@ const TransactionFileImport = () => {
           for (var i = 1; i < result.data.length; i++) {
             let row = result.data[i];
 
-            let date = new Date(row[columnIndexes.get("Päivämäärä")]);
-            date = date.toISOString().substring(0,10); // Ei toimi oikein enää vuonna 10000
+            let date = new Date(row[columnIndexes.get("date")]);
+            date = date.toISOString().substring(0,10); // Ei toimi oikein enää vuonna 10000 :)
 
             // Jos on erikseen maksaja ja maksunsaaja
-            let account = row[columnIndexes.get("Oma tili")];
-            if (!row[columnIndexes.get("Oma tili")]) {
-              account = row[columnIndexes.get("Oma tili2")];
+            let account = row[columnIndexes.get("account")];
+            if (!row[columnIndexes.get("account")]) {
+              account = row[columnIndexes.get("account2")];
             }
 
-            sortedData.push([
-              date,
-              row[columnIndexes.get("Summa")].replace(",", "."),
-              account,
-              row[columnIndexes.get("Toinen osapuoli")],
-              row[columnIndexes.get("Viitenumero")],
-              "", // TODO tähän kategoria-arvaukset
-              ""
-            ]);
+            sortedData.push({
+              date: date,
+              amount: row[columnIndexes.get("amount")].replace(",", "."),
+              account: account,
+              name: row[columnIndexes.get("name")],
+              reference_number: row[columnIndexes.get("reference_number")],
+              category: "", // TODO tähän kategoria-arvaukset
+              description: ""
+            });
           }
           
           // Lajitellaan tapahtumat päivämäärän mukaan nousevaan järjestykseen
@@ -93,19 +108,79 @@ const TransactionFileImport = () => {
     });
   };
 
-  const handleInput = (rowIndex, colIndex, value) => {
+  const handleInput = (rowIndex, col, value) => {
+    const wasExpense = tableData[rowIndex]["amount"].startsWith("-");
     const newData = [...tableData];
-    newData[rowIndex] = [...newData[rowIndex]];
-    newData[rowIndex][colIndex] = value;
+    newData[rowIndex] = { ...newData[rowIndex], [col]: value };
+    if (col == "amount" && wasExpense != value.startsWith("-")) { // Resetoidaan kategoria jos määrää muutettiin positiivisesta negatiiviseksi tai toisin päin
+      newData[rowIndex]["category"] = "";
+    }
     setTableData(newData);
   };
 
-  const saveTransactions = () => {
-    // Tallennuspainike on poissa käytöstä kun pakollisia kenttiä ei ole täytetty
-    // TODO tähän myös muut pakolliset kentät, ja puuttuvista tiedoista joku ilmoitus
-    if (tableData.some((row) => row[columns.indexOf("Kategoria")] === "")) return;
+  const deleteRow = (rowIndex) => {
+    const confirmDelete = window.confirm("Poistetaanko tapahtuma?");
+    if (confirmDelete) {
+      setTableData((prev) => prev.filter((_, index) => index !== rowIndex));
+    }
+  }
 
-    // TODO tietojen tallennus
+  const saveTransactions = async (event) => {
+    event.preventDefault();
+    setPending(true);
+
+    // Pakollisten tietojen tarkistus
+    // TODO puuttuvista tiedoista joku ilmoitus
+    console.log(tableData.length);
+    for (let i = 0; i < tableData.length; i++) {
+      let row = tableData[i];
+      console.log(row);
+      if (!row.date || row.date > new Date().toISOString().substring(0,10) || !row.amount || Number(row.amount) == 0 || !row.account || !row.category) {
+        setPending(false);
+        return;
+      }
+    }
+
+    // TODO nämä kaksi seuraavaa inserttiä pitää tehdä tietokantafunktioksi jotta ne voi molemmat peruuttaa jos jossain kohti on virhe
+    const { data, error } = await supabase.from("expense_transactions").insert(tableData
+      .filter((row) => (row.amount.startsWith("-")))
+      .map((row) => ({
+        date: row.date,
+        reference_number: row.reference_number,
+        description: row.description,
+        amount: row.amount.toString().slice(0, -1), // Tallennetaan tietokantaan ilman miinusta
+        account_to: row.name,
+        account_from: row.account,
+        category_id: row.category
+    })));
+
+    if (error) {
+      console.log("Tapahtumien tallennus epäonnistui:", error);
+      setPending(false);
+      return;
+    }
+    console.log("Lisätty kulut:", data); // TEMP
+
+    const { data1, error1 } = await supabase.from("income_transactions").insert(tableData
+      .filter((row) => (!row.amount.startsWith("-")))
+      .map((row) => ({
+        date: row.date,
+        reference_number: row.reference_number,
+        description: row.description,
+        amount: row.amount,
+        account_from: row.name,
+        account_to: row.account,
+        category_id: row.category
+    })));
+
+    if (error1) {
+      console.log("Tapahtumien tallennus epäonnistui:", error1);
+      setPending(false);
+      return;
+    }
+    console.log("Lisätty tulot:", data1); // TEMP
+
+    setPending(false);
   };
   
   return (
@@ -120,60 +195,83 @@ const TransactionFileImport = () => {
       {tableData.length > 0 && (
         <table className="border-collapse border border-gray-500 w-full">
           <thead>
+            {/* Otsikkorivi */}
             <tr>
-              {/* Otsikkorivi */}
-              {columns.map((col, index) => (
+              {columnPositions.map((col, index) => (
                 <th key={index} className="border border-gray-500 p-2">
-                  {col}
+                  {columnNames[col]}
                 </th>
               ))}
+              {/* Poistamispainikkeiden sarake */}
+              <th />
             </tr>
           </thead>
           <tbody>
             {tableData.map((row, rowIndex) => (
               <tr key={rowIndex}>
-                {columns.map((col, colIndex) => {
+                {columnPositions.map((col, colIndex) => {
                   const createInput = (c) => {
                     // Inputin tyyppi riippuu sarakkeen datatyypistä
                     switch (c) {
-                      case "Päivämäärä":
+                      case "date":
                         return <input
                         type="date"
-                        defaultValue={tableData[rowIndex][colIndex] || ""}
-                        onChange={(e) => handleInput(rowIndex, colIndex, e.target.value)} />;
-                      case "Summa":
+                        value={row[c]}
+                        onChange={(e) => handleInput(rowIndex, c, e.target.value)} />;
+                      case "amount":
                         return <input
                         type="number"
                         step=".01"
                         inputMode="decimal"
-                        defaultValue={tableData[rowIndex][colIndex] || ""}
-                        onChange={(e) => handleInput(rowIndex, colIndex, e.target.value)} />;
-                      case "Viitenumero":
+                        value={row[c]}
+                        onChange={(e) => handleInput(rowIndex, c, e.target.value)} />;
+                      case "reference_number":
                         return <input
                         type="text"
                         inputMode="numeric"
-                        defaultValue={tableData[rowIndex][colIndex] || ""}
-                        onChange={(e) => handleInput(rowIndex, colIndex, e.target.value)} />; // TODO tälle jokin tapa rajoittaa inputit vain numeroihin, mutta input type="number" ei välttämättä ole oikea ratkaisu tähän
-                      case "Kategoria":
+                        value={row[c]}
+                        onChange={(e) => handleInput(rowIndex, c, e.target.value)} />; // TODO tälle jokin tapa rajoittaa inputit vain numeroihin, mutta input type="number" ei välttämättä ole oikea ratkaisu tähän
+                      case "category":
                         return (
-                          <select onChange={(e) => handleInput(rowIndex, colIndex, e.target.value)}>
-                            <option value="">Valitse kategoria</option>
-                            {(tableData[rowIndex][columns.indexOf("Summa")].startsWith("-") ? expenseCategories : incomeCategories).map((c) => (
+                          <select onChange={(e) => handleInput(rowIndex, c, e.target.value)} value={row[c]}>
+                            <option value=""></option>
+                            {(row.amount.startsWith("-") ? expenseCategories : incomeCategories).map((c) => (
                               <option key={c.id} value={c.id}>
                                 {c.category_name}
                               </option>
                             ))}
                           </select>
                         );
-                      case "Nimi":
-                      case "Oma tili":
-                      case "Toinen osapuoli":
-                      case "Kuvaus":
+                      case "account":
+                        if (accounts.some((a) => a.account_number == row[c])) { // Jos tilinumerolle on jo tehty tili tietokantaan
+                          return (
+                            <select onChange={(e) => handleInput(rowIndex, c, e.target.value)} value={row[c]}>
+                              <option value=""></option>
+                              {accounts.map((c) => (
+                                <option key={c.id} value={c.account_number}>
+                                  {c.account_name ? `${c.account_name} (${c.account_number})` : c.account_number}
+                                </option>
+                              ))}
+                            </select>
+                          );
+                        } else { // Jos tilinumerolle ei ole tehty tiliä tietokantaan
+                          return (
+                          <div>
+                            <input
+                            type="text"
+                            value={row[c]}
+                            onChange={(e) => handleInput(rowIndex, c, e.target.value)} />
+                            <Button>+</Button> {/* TODO tilin luonti */}
+                          </div>
+                          );
+                        }
+                      case "name":
+                      case "description":
                       default:
                         return <input
                         type="text"
-                        defaultValue={tableData[rowIndex][colIndex] || ""}
-                        onChange={(e) => handleInput(rowIndex, colIndex, e.target.value)} />;
+                        value={row[c]}
+                        onChange={(e) => handleInput(rowIndex, c, e.target.value)} />;
                     }
                   };
           
@@ -183,6 +281,14 @@ const TransactionFileImport = () => {
                     </td>
                   );
                 })}
+                {/* Poistamispainike */}
+                <td>
+                  <Button
+                    onClick={() => deleteRow(rowIndex)}
+                  >
+                    Poista
+                  </Button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -190,7 +296,15 @@ const TransactionFileImport = () => {
       )}
 
       {tableData.length > 0 && (
-        <button onClick={saveTransactions}>Tallenna</button>
+        <Button
+          onClick={saveTransactions}
+          variant="primary"
+          type="submit"
+          disabled={isPending}
+          className="w-100"
+        >
+          {isPending ? "Lisätään..." : "Lisää"}
+        </Button>
       )}
     </div>
   );
