@@ -1,20 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Button, Container, Row, Col } from "react-bootstrap";
 import { ArrowsAngleExpand, InfoCircle } from "react-bootstrap-icons";
-import { loadCategories } from "../actions/Categories";
+import { loadCategories, useCategories } from "../actions/Categories";
 import { TransactionCategory } from "../constants/TransactionCategory";
 
 const TransactionContainer = ({ transaction, onClick }) => {
-  const [expenseCategories, setExpenseCategories] = useState([]);
-  const [incomeCategories, setIncomeCategories] = useState([]);
-
-  useEffect(() => { // TODO tämä niin ettei kaikkien nappien tarvitse hakea kategorioita erikseen
-    const getCategories = async () => {
-      setExpenseCategories(await loadCategories(TransactionCategory.EXPENSE));
-      setIncomeCategories(await loadCategories(TransactionCategory.INCOME));
-    }
-    getCategories();
-  }, []);
+  const { expenseCategories, incomeCategories, loading } = useCategories();
 
   return (
     <Button

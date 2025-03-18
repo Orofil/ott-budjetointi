@@ -11,6 +11,7 @@ import TransactionImport from "./pages/TransactionImport";
 import Budgets from "./pages/Budgets";
 import CreateBudgetPage from "./pages/CreateBudget";
 import HeaderNav from "./components/HeaderNav";
+import { CategoryProvider } from "./actions/Categories";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -44,6 +45,7 @@ function App() {
   }, []);
 
   return (
+    <CategoryProvider>
     <BrowserRouter>
       <Container fluid className="p-0">
         <HeaderNav />
@@ -70,6 +72,7 @@ function App() {
         </Row>
       </Container>
     </BrowserRouter>
+    </CategoryProvider>
   );
 }
 
