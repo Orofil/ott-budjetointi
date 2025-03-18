@@ -1,6 +1,7 @@
 import React, { useState } from "react"; 
 import supabase from "../config/supabaseClient"; 
-import { Link, useNavigate } from "react-router-dom"; 
+import { Link, useNavigate } from "react-router-dom";
+import { Row, Col, Form, Button } from "react-bootstrap";
 
 function Login() {
 
@@ -61,39 +62,74 @@ function Login() {
   };
 
   return (
-    <div>
-      <h2>Kirjaudu sisään</h2>
-      <br />
-      {message && <span>{message}</span>}  {/* Näytetään mahdollinen virheilmoitus tai onnistumisviesti */}
+    <Col>
+      <div className="d-flex flex-column align-items-center" style={{ paddingTop: "20vh", paddingBottom: "0vh"}} >
+        <Row><h2>Kirjaudu sisään</h2> <p></p></Row>
+  
+        <Form onSubmit={handleSubmit}>
+          {/* Käyttäjätunnus */}
+          <Row className="mb-3 w-100 justify-content-center">
+            <Col xs={6} md={4} className="text-end fw-bold">Käyttäjätunnus</Col>
+            <Col xs={6} md={4}>
+              <Form.Control
+                onChange={(e) => setEmail(e.target.value)}  // Päivitetään sähköposti-tila
+                value={email}
+                type="email"
+                placeholder="Sähköposti"
+                required  // Tämä kenttä on pakollinen
+              />
+            </Col> 
+            <Col xs={6} md={4} type="text" placeholder="testi"/>
+          </Row>
+    
+          {/* Salasana */}
+          <Row className="mb-3 w-100 justify-content-center">
+            <Col xs={6} md={4} className="text-end fw-bold">Salasana</Col>
+            <Col xs={6} md={4}>
+              <Form.Control
+                onChange={(e) => setPassword(e.target.value)}  // Päivitetään salasana-tila
+                value={password}
+                type="password"
+                placeholder="Salasana"
+                required  // Tämä kenttä on pakollinen
+              />
+            </Col>
+            <Col xs={6} md={4} type="text" placeholder="testi"/>
+          </Row>
+    
+          {/* TODO tästä paremman näköinen */}
+          {message && <span>{message}</span>}  {/* Näytetään mahdollinen virheilmoitus tai onnistumisviesti */}
 
-      <form onSubmit={handleSubmit}>  {/* Lomakkeen lähetyksen käsittely */}
-        <input
-          onChange={(e) => setEmail(e.target.value)}  // Päivitetään sähköposti-tila
-          value={email}
-          type="email"
-          placeholder="Sähköposti"
-          required  // Tämä kenttä on pakollinen
-        />
-        <input
-          onChange={(e) => setPassword(e.target.value)}  // Päivitetään salasana-tila
-          value={password}
-          type="password"
-          placeholder="Salasana"
-          required  // Tämä kenttä on pakollinen
-        />
-        <button type="submit">Kirjaudu sisään</button>  {/* Lähetetään lomake */}
-      </form>
+          {/* TODO tästä paremman näköinen */}
+          {isEmailSent && (  // Jos sähköposti ei ole vahvistettu, näytetään vaihtoehto lähettää vahvistuslinkki uudelleen
+            <div>
+              <p>Sähköpostisi ei ole vahvistettu. Voit pyytää uuden vahvistuslinkin.</p>
+              <button onClick={handleResendConfirmation}>Lähetä uusi vahvistuslinkki</button>
+            </div>
+          )}
 
-      {isEmailSent && (  // Jos sähköposti ei ole vahvistettu, näytetään vaihtoehto lähettää vahvistuslinkki uudelleen
-        <div>
-          <p>Sähköpostisi ei ole vahvistettu. Voit pyytää uuden vahvistuslinkin.</p>
-          <button onClick={handleResendConfirmation}>Lähetä uusi vahvistuslinkki</button>
-        </div>
-      )}
-
-      <span>Ei vielä tiliä?</span>
-      <Link to="/register">Rekisteröidy</Link>  {/* Linkki rekisteröitymissivulle, jos käyttäjällä ei ole tiliä */}
-    </div>
+          {/* Kirjaudu - nappi sekä linkit - unohtunut salasana & rekisteröidy tästä */}
+          <Row className="mb-3 w-100 justify-content-center">
+            
+            <Col xs={4} md={2} className="text-start">
+              <div className="text-muted fst-italic" style={{ cursor: "pointer" }}>
+                <a href="#" className="text-decoration-none">Unohtunut salasana?</a> {/* TODO toiminnallisuus puuttuu */}
+              </div>
+              <div className="text-muted fst-italic" style={{ cursor: "pointer" }}>
+                <Link
+                  to="/register"
+                  className="text-decoration-none">
+                  Rekisteröidy tästä
+                </Link>
+              </div>
+            </Col>
+            <Col xs={4} md={2}>
+              <Button type="submit" color= 'white'>Kirjaudu</Button>
+            </Col>
+          </Row>
+        </Form>
+      </div>
+    </Col>
   );
 }
 

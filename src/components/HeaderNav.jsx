@@ -38,9 +38,6 @@ const HeaderNav = () => (
             <Nav.Link as={Link} to="/budgets">
               Budjettien hallinta
             </Nav.Link>
-            <Nav.Link as={Link} to="/kirjaudu">
-              Kirjaudu sisään
-            </Nav.Link>
           </Nav>
         </Offcanvas.Body>
       </Navbar.Offcanvas>
