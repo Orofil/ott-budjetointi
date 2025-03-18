@@ -1,19 +1,17 @@
 /* Tilitapahtuman vienti tietokantaan (tapahtuma transactions tauluun,
 tilinumerot accounts tauluun) */
 
-
-
 CREATE OR REPLACE FUNCTION add_transaction(
     p_date DATE,
-    p_reference_number TEXT,
+    p_reference_number NUMERIC,
     p_description TEXT,
-    p_amount DOUBLE PRECISION,
-    p_account_from TEXT,
-    p_account_to TEXT,
+    p_amount NUMERIC,
+    p_account INTEGER,
+    p_name TEXT,
     p_category_id INTEGER
-) RETURNS UUID AS $$
+) RETURNS INTEGER AS $$
 DECLARE
-    new_transaction_id UUID;
+    new_transaction_id INTEGER;
 BEGIN
     -- Lisätään tapahtuma
     IF p_amount < 0
@@ -24,9 +22,9 @@ BEGIN
       )
       VALUES (
           p_date, p_reference_number, p_description, ABS(p_amount),
-          p_account_from, p_account_to, p_category_id
+          p_account, p_name, p_category_id
       )
-      RETURNING transaction_id INTO new_transaction_id;
+      RETURNING id INTO new_transaction_id;
     ELSE
       INSERT INTO public.income_transactions (
           date, reference_number, description, amount, 
@@ -34,12 +32,12 @@ BEGIN
       )
       VALUES (
           p_date, p_reference_number, p_description, ABS(p_amount),
-          p_account_from, p_account_to, p_category_id
+          p_name, p_account, p_category_id
       )
-      RETURNING transaction_id INTO new_transaction_id;
+      RETURNING id INTO new_transaction_id;
     END IF;
 
-    -- Palautetaan uuden tapahtuman UUID
+    -- Palautetaan uuden tapahtuman ID
     RETURN new_transaction_id;
 END;
 $$ LANGUAGE plpgsql;

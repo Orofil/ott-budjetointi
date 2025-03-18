@@ -39,8 +39,8 @@ export const createTransaction = async (currentState, formData) => {
     p_reference_number: referenceNumber,
     p_description: description,
     p_amount: amount,
-    p_account_from: (type == TransactionCategory.EXPENSE ? account : payeePayer),
-    p_account_to: (type == TransactionCategory.EXPENSE ? payeePayer : account),
+    p_account: account,
+    p_name: payeePayer,
     p_category_id: category
   });
 
@@ -60,11 +60,11 @@ export const createTransactions = async (transactions) => {
     let tr = transactions[i];
     const { data, error } = await supabase.rpc("add_transaction", {
       p_date: tr.date,
-      p_reference_number: parseInt(tr.reference_number), // TODO ei toimi, tulee virhe column "reference_number" is of type numeric but expression is of type text
+      p_reference_number: tr.reference_number === "" ? null : Number(tr.reference_number),
       p_description: tr.description,
       p_amount: tr.amount,
-      p_account_from: (tr.amount.startsWith("-") ? tr.account : tr.name),
-      p_account_to: (tr.amount.startsWith("-") ? tr.name : tr.account),
+      p_account: tr.account,
+      p_name: tr.name,
       p_category_id: tr.category
     });
   
