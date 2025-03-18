@@ -11,6 +11,7 @@ import TransactionImport from "./pages/TransactionImport";
 import Budgets from "./pages/Budgets";
 import CreateBudgetPage from "./pages/CreateBudget";
 import HeaderNav from "./components/HeaderNav";
+import Kirjaudu from "./pages/Kirjaudu";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -58,6 +59,7 @@ function App() {
             <Route path="/transaction-import" element={<TransactionImport />} />
             <Route path="/budgets" element={<Budgets />} />
             <Route path="/create-budget" element={<CreateBudgetPage />} />
+            <Route path="/kirjaudu" element={<Kirjaudu />} />
 
             {/* Suojattu reitti */}
             <Route
