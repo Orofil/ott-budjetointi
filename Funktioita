@@ -4,7 +4,6 @@ tilinumerot accounts tauluun) */
 
 
 CREATE OR REPLACE FUNCTION add_transaction(
-    p_user_id UUID,
     p_date DATE,
     p_reference_number TEXT,
     p_description TEXT,
@@ -15,48 +14,30 @@ CREATE OR REPLACE FUNCTION add_transaction(
 ) RETURNS UUID AS $$
 DECLARE
     new_transaction_id UUID;
-    account_exists BOOLEAN;
 BEGIN
-    -- Tarkistetaan, onko tilinumero jo olemassa "accounts" taulussa (account_from)
-    SELECT EXISTS (
-        SELECT 1 FROM public.accounts WHERE account_number = p_account_from AND user_id = p_user_id
-    ) INTO account_exists;
-
-    -- Jos tilinumeroa ei löydy, lisätään se
-    IF NOT account_exists THEN
-        INSERT INTO public.accounts (user_id, account_number)
-        VALUES (p_user_id, p_account_from);
-    END IF;
-
-    -- Tarkistetaan, onko tilinumero jo olemassa "accounts" taulussa (account_to)
-    SELECT EXISTS (
-        SELECT 1 FROM public.accounts WHERE account_number = p_account_to AND user_id = p_user_id
-    ) INTO account_exists;
-
-    -- Jos tilinumeroa ei löydy, lisätään se
-    IF NOT account_exists THEN
-        INSERT INTO public.accounts (user_id, account_number)
-        VALUES (p_user_id, p_account_to);
-    END IF;
-
     -- Lisätään tapahtuma
-    INSERT INTO public.transaction (
-        user_id, date, reference_number, description, amount, 
-        account_from, account_to, expense_category_id, income_category_id
-    )
-    VALUES (
-        p_user_id, p_date, p_reference_number, p_description, p_amount, 
-        p_account_from, p_account_to, 
-        CASE 
-            WHEN p_amount < 0 THEN p_category_id -- Käytetään expense category ID:tä
-            ELSE NULL 
-        END,
-        CASE 
-            WHEN p_amount > 0 THEN p_category_id -- Käytetään income category ID:tä
-            ELSE NULL 
-        END
-    )
-    RETURNING transaction_id INTO new_transaction_id;
+    IF p_amount < 0
+    THEN
+      INSERT INTO public.expense_transactions (
+          date, reference_number, description, amount, 
+          account_from, account_to, category_id
+      )
+      VALUES (
+          p_date, p_reference_number, p_description, ABS(p_amount),
+          p_account_from, p_account_to, p_category_id
+      )
+      RETURNING transaction_id INTO new_transaction_id;
+    ELSE
+      INSERT INTO public.income_transactions (
+          date, reference_number, description, amount, 
+          account_from, account_to, category_id
+      )
+      VALUES (
+          p_date, p_reference_number, p_description, ABS(p_amount),
+          p_account_from, p_account_to, p_category_id
+      )
+      RETURNING transaction_id INTO new_transaction_id;
+    END IF;
 
     -- Palautetaan uuden tapahtuman UUID
     RETURN new_transaction_id;
@@ -66,7 +47,6 @@ $$ LANGUAGE plpgsql;
 
 -- Positiivinen summa
 SELECT add_transaction(
-    '570f6c1f-0061-4c44-8770-b7ad15cc29a1',
     '2024-03-06',
     '9876543210',
     'Palkka',
@@ -78,7 +58,6 @@ SELECT add_transaction(
 
 -- Negatiivinen summa
 SELECT add_transaction(
-    '570f6c1f-0061-4c44-8770-b7ad15cc29a1',
     '2024-03-06',
     '9876543211',
     'Ruokakauppa',
@@ -94,16 +73,16 @@ SELECT add_transaction(
 CREATE OR REPLACE FUNCTION add_user_category(
     p_user_id UUID,
     p_category_name TEXT,
-    p_category_type INTEGER  -- 1 = income, 2 = expense
+    p_category_type INTEGER  -- 0 = expense, 1 = income
 ) RETURNS VOID AS $$
 BEGIN
-    IF p_category_type = 1 THEN
-        -- Lisää uusi kategoria income_categories tauluun
-        INSERT INTO public.income_categories (user_id, category_name)
-        VALUES (p_user_id, p_category_name);
-    ELSIF p_category_type = 2 THEN
+    IF p_category_type = 0 THEN
         -- Lisää uusi kategoria expense_categories tauluun
         INSERT INTO public.expense_categories (user_id, category_name)
+        VALUES (p_user_id, p_category_name);
+    ELSIF p_category_type = 1 THEN
+        -- Lisää uusi kategoria income_categories tauluun
+        INSERT INTO public.income_categories (user_id, category_name)
         VALUES (p_user_id, p_category_name);
     END IF;
 END;

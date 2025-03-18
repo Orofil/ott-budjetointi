@@ -6,6 +6,7 @@ import supabase from "../config/supabaseClient";
 import { Button } from "react-bootstrap";
 import { loadAccounts } from "../actions/Accounts";
 import AccountDropdown from "./AccountDropdown";
+import { createTransactions } from "../actions/Transactions";
 
 const TransactionFileImport = () => {
   const [tableData, setTableData] = useState([]);
@@ -77,7 +78,22 @@ const TransactionFileImport = () => {
           for (var i = 1; i < result.data.length; i++) {
             let row = result.data[i];
 
-            let date = new Date(row[columnIndexes.get("date")]);
+            // Ohitetaan tyhjät rivit ja varaukset
+            if (!row[columnIndexes.get("date")] || row[columnIndexes.get("date")] == "Varaus") {
+              continue;
+            }
+
+            let date;
+            const dateRegex = /^(\d+)\.(\d+)\.(\d+)$/; // dd.mm.yyyy-muoto
+            const match = row[columnIndexes.get("date")].match(dateRegex);
+            if (match) {
+              const day = parseInt(match[1]);
+              const month = parseInt(match[2]) - 1;
+              const year = parseInt(match[3]);
+              date = new Date(year, month, day);
+            } else {
+              date = new Date(row[columnIndexes.get("date")]);
+            }
             date = date.toISOString().substring(0,10); // Ei toimi oikein enää vuonna 10000 :)
 
             // Jos on erikseen maksaja ja maksunsaaja
@@ -88,13 +104,22 @@ const TransactionFileImport = () => {
             // let accountNumber = accounts.find((a) => a.account_number == accountNumber).id; // FIXME ongelma: accounts is undefined
             // if (!accountNumber) accountNumber = "";
 
+            // Hyväksytään vain numerot viitenumeroksi
+            let reference_number;
+            const numberRegex = /^\d+$/;
+            if (row[columnIndexes.get("reference_number")].match(numberRegex)) {
+              reference_number = row[columnIndexes.get("reference_number")];
+            } else {
+              reference_number = "";
+            }
+
             sortedData.push({
               date: date,
               amount: row[columnIndexes.get("amount")].replace(",", "."),
               account_number: account, // Tilikentän tekstiä varten
               account: "", // TODO tähän tulisi accountNumber ylempää
               name: row[columnIndexes.get("name")],
-              reference_number: row[columnIndexes.get("reference_number")],
+              reference_number: reference_number,
               category: "", // TODO tähän kategoria-arvaukset
               description: ""
             });
@@ -102,7 +127,7 @@ const TransactionFileImport = () => {
           
           // Lajitellaan tapahtumat päivämäärän mukaan nousevaan järjestykseen
           sortedData = sortedData.sort((a, b) => {
-            return a[0] - b[0];
+            return a.date > b.date;
           });
           setTableData(sortedData);
         }
@@ -143,45 +168,7 @@ const TransactionFileImport = () => {
       }
     }
 
-    // TODO nämä kaksi seuraavaa inserttiä pitää tehdä tietokantafunktioksi jotta ne voi molemmat peruuttaa jos jossain kohti on virhe
-    const { data, error } = await supabase.from("expense_transactions").insert(tableData
-      .filter((row) => (row.amount.startsWith("-")))
-      .map((row) => ({
-        date: row.date,
-        reference_number: row.reference_number,
-        description: row.description,
-        amount: row.amount.toString().slice(1), // Tallennetaan tietokantaan ilman miinusta
-        account_to: row.name,
-        account_from: row.account,
-        category_id: row.category
-    })));
-
-    if (error) {
-      console.log("Tapahtumien tallennus epäonnistui:", error);
-      setPending(false);
-      return;
-    }
-
-    console.log(tableData
-      .filter((row) => (!row.amount.startsWith("-"))));
-    // TODO ei toimi
-    const { data1, error1 } = await supabase.from("income_transactions").insert(tableData
-      .filter((row) => (!row.amount.startsWith("-")))
-      .map((row) => ({
-        date: row.date,
-        reference_number: row.reference_number,
-        description: row.description,
-        amount: row.amount,
-        account_from: row.name,
-        account_to: row.account,
-        category_id: row.category
-    })));
-
-    if (error1) {
-      console.log("Tapahtumien tallennus epäonnistui:", error1);
-      setPending(false);
-      return;
-    }
+    await createTransactions(tableData);
 
     setPending(false);
   };
@@ -230,10 +217,9 @@ const TransactionFileImport = () => {
                         onChange={(e) => handleInput(rowIndex, c, e.target.value)} />;
                       case "reference_number":
                         return <input
-                        type="text"
-                        inputMode="numeric"
+                        type="number"
                         value={row[c]}
-                        onChange={(e) => handleInput(rowIndex, c, e.target.value)} />; // TODO tälle jokin tapa rajoittaa inputit vain numeroihin, mutta input type="number" ei välttämättä ole oikea ratkaisu tähän
+                        onChange={(e) => handleInput(rowIndex, c, e.target.value)} />; // TODO input type="number" ei välttämättä ole oikea ratkaisu tähän, vaan ehkä text jossa rajoitetaan teksti vain numeroihin
                       case "category":
                         return (
                           <select onChange={(e) => handleInput(rowIndex, c, e.target.value)} value={row[c]}>

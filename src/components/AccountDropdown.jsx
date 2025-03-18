@@ -30,7 +30,6 @@ const AccountDropdown = ({ value, onChange }) => {
       account_name: accountName
     });
     if (data) {
-      console.log(data); // TEMP
       setOptions((prev) => [...prev, data[0]]);
 
       setShowModal(false);

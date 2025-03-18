@@ -33,16 +33,12 @@ export const createTransaction = async (currentState, formData) => {
     return message;
   }
   
-  // Haetaan kirjautuneen käyttäjän tiedot
-  const { data: { user } } = await supabase.auth.getUser();
-
   // Lisätään tapahtuma
   const { data, error } = await supabase.rpc("add_transaction", {
-    p_user_id: user.id,
     p_date: date,
     p_reference_number: referenceNumber,
     p_description: description,
-    p_amount: (type == TransactionCategory.EXPENSE ? "-" : "") + amount,
+    p_amount: amount,
     p_account_from: (type == TransactionCategory.EXPENSE ? account : payeePayer),
     p_account_to: (type == TransactionCategory.EXPENSE ? payeePayer : account),
     p_category_id: category
@@ -55,6 +51,30 @@ export const createTransaction = async (currentState, formData) => {
   }
   return message;
 };
+
+export const createTransactions = async (transactions) => {
+  if (transactions == null) return;
+
+  // TODO tätä varten pitää tehdä tietokantafunktio jotta nämä voi kaikki peruuttaa jos jossain kohti on virhe
+  for (let i = 0; i < transactions.length; i++) {
+    let tr = transactions[i];
+    const { data, error } = await supabase.rpc("add_transaction", {
+      p_date: tr.date,
+      p_reference_number: parseInt(tr.reference_number), // TODO ei toimi, tulee virhe column "reference_number" is of type numeric but expression is of type text
+      p_description: tr.description,
+      p_amount: tr.amount,
+      p_account_from: (tr.amount.startsWith("-") ? tr.account : tr.name),
+      p_account_to: (tr.amount.startsWith("-") ? tr.name : tr.account),
+      p_category_id: tr.category
+    });
+  
+    if (data != null) console.log("Tapahtuma luotu, ID:", data);
+    if (error != null) {
+      console.log("Virhe tapahtuman tallentamisessa:", error);
+      return;
+    }
+  }
+}
 
 export const loadTransactions = async (offset, pageLimit) => {
   // Haetaan kirjautuneen käyttäjän tiedot
