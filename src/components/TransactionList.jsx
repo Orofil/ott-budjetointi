@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { loadTransactions } from "../actions/Transactions";
+import { Stack } from "react-bootstrap";
+import TransactionContainer from "./TransactionContainer";
 
 export default function TransactionList() {
   const [transactions, setTransactions] = useState([]);
@@ -39,13 +41,11 @@ export default function TransactionList() {
 
   return (
     <div>
-      <ul>
+      <Stack gap={2} className="mx-auto w-100" style={{ maxWidth: "60em" }}>
         {transactions.map((t) => (
-          <li key={t.type + ":" + t.id}>
-            {t.date} : {t.amount} : {t.description}
-          </li>
+          <TransactionContainer key={t.type + ":" + t.id} transaction={t} /> // TODO onClick ja modal
         ))}
-      </ul>
+      </Stack>
 
       {/* TODO testaa toimiiko */}
       {!transactions && (
