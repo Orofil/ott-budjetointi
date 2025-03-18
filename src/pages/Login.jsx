@@ -69,7 +69,7 @@ function Login() {
         <Form onSubmit={handleSubmit}>
           {/* Käyttäjätunnus */}
           <Row className="mb-3 w-100 justify-content-center">
-            <Col xs={6} md={4} className="text-end fw-bold">Käyttäjätunnus</Col>
+            <Col xs={6} md={4} className="text-end fw-bold">Sähköposti</Col>
             <Col xs={6} md={4}>
               <Form.Control
                 onChange={(e) => setEmail(e.target.value)}  // Päivitetään sähköposti-tila
