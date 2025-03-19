@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Button, Container, Row, Col } from "react-bootstrap";
-import { ArrowsAngleExpand, InfoCircle } from "react-bootstrap-icons";
+import { ArrowsAngleExpand } from "react-bootstrap-icons";
 import { loadCategories, useCategories } from "../actions/Categories";
-import { TransactionCategory } from "../constants/TransactionCategory";
+import { useAccounts } from "../actions/Accounts";
 
 const TransactionContainer = ({ transaction, onClick }) => {
   const { expenseCategories, incomeCategories, loading } = useCategories();
+  const { accounts, addAccount } = useAccounts();
 
   return (
     <Button
@@ -21,13 +22,13 @@ const TransactionContainer = ({ transaction, onClick }) => {
 
           <Col xs="3">
             <div className="fw-semibold">{transaction.other_account}</div>
-            <div className="text-muted small">{transaction.own_account}</div> {/* TODO hae tilit näille ja tee sama haku kuin kategorioilla */}
+            <div className="text-muted small">{accounts.find(a => a.id === transaction.own_account)?.account_number || "Ladataan..."}</div> {/* TODO tilin nimi myös, tai vain jompi kumpi */}
           </Col>
 
           <Col xs="2" className="text-muted small">
               {transaction.type == 0 ?
-              expenseCategories.find(c => c.id === transaction.category_id)?.category_name || transaction.category_id :
-              incomeCategories.find(c => c.id === transaction.category_id)?.category_name || transaction.category_id}
+              expenseCategories.find(c => c.id === transaction.category_id)?.category_name || "Ladataan..." :
+              incomeCategories.find(c => c.id === transaction.category_id)?.category_name || "Ladataan..."}
           </Col>
 
           <Col xs="4" className="text-muted small d-none d-md-block">{transaction.description}</Col>

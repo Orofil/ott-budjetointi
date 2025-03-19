@@ -100,6 +100,26 @@ SELECT add_user_category(
 );
 
 
+/* Uuden tilin lisääminen */
 
+CREATE OR REPLACE FUNCTION add_account(
+    p_user_id UUID,
+    p_account_number TEXT,
+    p_account_name TEXT
+) RETURNS INTEGER AS $$
+DECLARE
+    new_id INTEGER;
+BEGIN
+    -- Lisätään tili
+    INSERT INTO public.accounts (
+        user_id, account_number, account_name
+    )
+    VALUES (
+        p_user_id, p_account_number, p_account_name
+    )
+    RETURNING id INTO new_id;
 
-
+    -- Palautetaan uuden tilin ID
+    RETURN new_id;
+END;
+$$ LANGUAGE plpgsql;

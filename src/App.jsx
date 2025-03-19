@@ -12,6 +12,7 @@ import Budgets from "./pages/Budgets";
 import CreateBudgetPage from "./pages/CreateBudget";
 import HeaderNav from "./components/HeaderNav";
 import { CategoryProvider } from "./actions/Categories";
+import { AccountProvider } from "./actions/Accounts";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -45,6 +46,7 @@ function App() {
   }, []);
 
   return (
+    <AccountProvider>
     <CategoryProvider>
     <BrowserRouter>
       <Container fluid className="p-0">
@@ -73,6 +75,7 @@ function App() {
       </Container>
     </BrowserRouter>
     </CategoryProvider>
+    </AccountProvider>
   );
 }
 

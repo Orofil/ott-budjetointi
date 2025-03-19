@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import Papa from "papaparse";
-import { loadCategories } from "../actions/Categories";
+import { loadCategories, useCategories } from "../actions/Categories";
 import { TransactionCategory } from "../constants/TransactionCategory";
-import supabase from "../config/supabaseClient";
 import { Button } from "react-bootstrap";
-import { loadAccounts } from "../actions/Accounts";
+import { useAccounts } from "../actions/Accounts";
 import AccountDropdown from "./AccountDropdown";
 import { createTransactions } from "../actions/Transactions";
 
@@ -32,18 +31,13 @@ const TransactionFileImport = () => {
   const updateColumnIndex = (k,v) => {
     setColumnIndexes(new Map(columnIndexes.set(k,v)));
   }
-  const [expenseCategories, setExpenseCategories] = useState();
-  const [incomeCategories, setIncomeCategories] = useState();
-  const [accounts, setAccounts] = useState();
-  const [isPending, setPending] = useState();
+  const { expenseCategories, incomeCategories, loading } = useCategories();
+  const { accounts, addAccount } = useAccounts();
+  const [isPending, setPending] = useState(false);
 
   const fileUploadAndParse = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
-
-    setExpenseCategories(await loadCategories(TransactionCategory.EXPENSE));
-    setIncomeCategories(await loadCategories(TransactionCategory.INCOME));
-    setAccounts(await loadAccounts());
 
     // Luetaan tiedosto
     Papa.parse(file, {
@@ -56,15 +50,17 @@ const TransactionFileImport = () => {
                 updateColumnIndex("date", i);
                 break;
               case "Määrä":
+              case "Summa":
                 updateColumnIndex("amount", i);
                 break;
-              case "Maksaja":
+              case "Maksaja": // TODO S-pankilla tämä on tulojen tapauksessa se "nimi" ja saajan nimi on oma tili
                 updateColumnIndex("account", i);
                 break;
               case "Maksunsaaja":
                 updateColumnIndex("account2", i);
                 break;
               case "Nimi":
+              case "Saajan nimi":
                 updateColumnIndex("name", i);
                 break;
               case "Viitenumero":
@@ -101,9 +97,8 @@ const TransactionFileImport = () => {
             if (!row[columnIndexes.get("account")]) {
               account = row[columnIndexes.get("account2")];
             }
-            // let accountNumber = accounts.find((a) => a.account_number == accountNumber).id; // FIXME ongelma: accounts is undefined
-            // if (!accountNumber) accountNumber = "";
-
+            let accountNumber = accounts.find(a => a.account_number == account)?.id || "";
+            
             // Hyväksytään vain numerot viitenumeroksi
             let reference_number;
             const numberRegex = /^\d+$/;
@@ -117,7 +112,7 @@ const TransactionFileImport = () => {
               date: date,
               amount: row[columnIndexes.get("amount")].replace(",", "."),
               account_number: account, // Tilikentän tekstiä varten
-              account: "", // TODO tähän tulisi accountNumber ylempää
+              account: accountNumber, // TODO tähän tulisi accountNumber ylempää
               name: row[columnIndexes.get("name")],
               reference_number: reference_number,
               category: "", // TODO tähän kategoria-arvaukset
