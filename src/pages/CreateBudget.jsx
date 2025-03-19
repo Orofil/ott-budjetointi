@@ -1,27 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loadCategories } from '../actions/Categories';
-import { TransactionCategory } from '../constants/TransactionCategory';
+import { useCategories } from '../actions/Categories';
+import { Button, Col, Form, ListGroup, Row } from 'react-bootstrap';
 
 const CreateBudgetPage = () => {
   const [budgetName, setBudgetName] = useState('');
   const [budgetAmount, setBudgetAmount] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(''); // Kategoria
-  const [categories, setCategories] = useState([]); // Kategoriat
+  const { expenseCategories, incomeCategories, loading } = useCategories(); // Kategoriat
+  const [selectedCategories, setSelectedCategories] = useState([]);
 
   const navigate = useNavigate();
-
-  // Hakee kategoriat (sisältäen oletuskategoriat ja käyttäjän lisäämät)
-  useEffect(() => {
-    const fetchCategories = async () => {
-      let c = await loadCategories(TransactionCategory.EXPENSE); // TODO tällä hetkellä hakee vain kulujen kategoriat
-      if (c != null) setCategories(c); // Aseta kategoriat tilaan
-    };
-
-    fetchCategories();
-  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -55,6 +45,17 @@ const CreateBudgetPage = () => {
 
   const handleCancel = () => {
     navigate('/budgets'); // Jos käyttäjä peruuttaa, ohjataan takaisin Budgets-sivulle
+  };
+
+  const toggleCategory = (item) => {
+    setSelectedCategories((prev) =>
+      prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]
+    );
+  };
+
+  const toggleAllCategories = () => {
+    const allCategories = [...new Set([...expenseCategories, ...incomeCategories])];
+    setSelectedCategories(selectedCategories.length === allCategories.length ? [] : allCategories);
   };
 
   return (
@@ -101,22 +102,48 @@ const CreateBudgetPage = () => {
             required
           />
         </div>
-        <div>
+        <div style={{ maxWidth: "30vw" }}>
           <label htmlFor="category">Valitse seurattavat kategoriat:</label>
-          <select
-            id="category"
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            required
-          >
-            <option value="">Valitse kategoria</option>
-            <option value="all">Kaikki kategoriat</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.category_name}
-              </option>
-            ))}
-          </select>
+          <Button variant="secondary" onClick={toggleAllCategories} className="w-100 mb-3">
+            {selectedCategories.length === [...new Set([...expenseCategories, ...incomeCategories])].length
+              ? "Poista valinnat"
+              : "Valitse kaikki"}
+          </Button>
+
+          <Row>
+            <Col>
+              <h5>Kulujen kategoriat</h5>
+              <ListGroup>
+                {expenseCategories.map((c) => (
+                  <ListGroup.Item
+                    key={c.id}
+                    action
+                    type="button"
+                    active={selectedCategories.includes(c)}
+                    onClick={() => toggleCategory(c)}
+                  >
+                    {c.category_name}
+                  </ListGroup.Item>
+                ))}
+              </ListGroup>
+            </Col>
+            <Col>
+              <h5>Tulojen kategoriat</h5>
+              <ListGroup>
+                {incomeCategories.map((c) => (
+                  <ListGroup.Item
+                    key={c.id}
+                    action
+                    type="button"
+                    active={selectedCategories.includes(c)}
+                    onClick={() => toggleCategory(c)}
+                  >
+                    {c.category_name}
+                  </ListGroup.Item>
+                ))}
+              </ListGroup>
+            </Col>
+          </Row>
         </div>
         <button type="submit">Luo budjetti</button>
         <button type="button" onClick={handleCancel}>Peruuta</button>

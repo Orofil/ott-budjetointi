@@ -2,7 +2,7 @@ import React, { createContext, useState, useEffect, useContext } from "react";
 import supabase from "../config/supabaseClient";
 import { TransactionCategory } from "../constants/TransactionCategory";
 
-export const loadCategories = async (categoryType) => {
+const loadCategories = async (categoryType) => {
   // Jatketaan vain jos kategorian tyyppi löytyy TransactionCategorysta
   if (!Object.values(TransactionCategory).includes(categoryType)) {
     console.log("Virheellinen kategoriatyyppi:", categoryType);

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import Papa from "papaparse";
-import { loadCategories, useCategories } from "../actions/Categories";
-import { TransactionCategory } from "../constants/TransactionCategory";
+import { useCategories } from "../actions/Categories";
 import { Button } from "react-bootstrap";
 import { useAccounts } from "../actions/Accounts";
 import AccountDropdown from "./AccountDropdown";

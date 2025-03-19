@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, Container, Row, Col } from "react-bootstrap";
 import { ArrowsAngleExpand } from "react-bootstrap-icons";
-import { loadCategories, useCategories } from "../actions/Categories";
+import { useCategories } from "../actions/Categories";
 import { useAccounts } from "../actions/Accounts";
 
 const TransactionContainer = ({ transaction, onClick }) => {
