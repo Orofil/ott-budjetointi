@@ -1,10 +1,15 @@
-import { Container, Navbar, Nav, Offcanvas, Button } from "react-bootstrap";
+import {
+  Container,
+  Navbar,
+  Nav,
+  Offcanvas,
+  Button,
+  Dropdown,
+} from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 const HeaderNav = () => (
   <Container fluid className="p-0">
-    {" "}
-    {/* TODO en saanut toimimaan ilman ylimääräistä Containeria tässä, poista kommentti jos asialla ei ole väliä */}
     {/* Yläpalkki */}
     <Navbar bg="dark" variant="dark" expand="md" className="w-100 px-3">
       <Container
@@ -39,10 +44,29 @@ const HeaderNav = () => (
           </Nav.Link>
         </Nav>
 
-        {/* Profiilipainike oikealla */}
-        <Button variant="outline-light" className="ms-auto">
-          Profiili
-        </Button>
+        {/* Profiili-dropdown */}
+        <Dropdown>
+          <Dropdown.Toggle
+            variant="outline-light"
+            id="dropdown-basic"
+            className="ms-auto"
+            style={{ transition: "background 0.3s, color 0.3s" }}
+            onMouseEnter={(e) => {
+              e.target.style.background = "#white";
+              e.target.style.color = "black";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = "transparent";
+              e.target.style.color = "white";
+            }}
+          >
+            Profiili
+          </Dropdown.Toggle>
+
+          <Dropdown.Menu align="end">
+            <Dropdown.Item>Kirjaudu ulos</Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
 
         {/* Mobiilin hampurilaisvalikko */}
         <Navbar.Offcanvas
