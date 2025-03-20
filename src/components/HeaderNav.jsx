@@ -7,8 +7,23 @@ import {
   Dropdown,
 } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import  supabase  from "../config/supabaseClient"; 
+import { useNavigate } from "react-router-dom";
 
-const HeaderNav = () => (
+const HeaderNav = () => {
+  const navigate = useNavigate();
+
+  // Kirjaa käyttäjän ulos
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (!error) {
+      navigate("/login"); // Uudelleenohjaa kirjautumissivulle
+    } else {
+      console.error("Uloskirjautumisvirhe:", error.message);
+    }
+  };
+
+  return (
   <Container fluid className="p-0">
     {/* Yläpalkki */}
     <Navbar bg="dark" variant="dark" expand="md" className="w-100 px-3">
@@ -64,7 +79,7 @@ const HeaderNav = () => (
           </Dropdown.Toggle>
 
           <Dropdown.Menu align="end">
-            <Dropdown.Item>Kirjaudu ulos</Dropdown.Item>
+            <Dropdown.Item onClick={handleLogout}>Kirjaudu ulos</Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
 
@@ -99,5 +114,6 @@ const HeaderNav = () => (
       </Container>
     </Navbar>
   </Container>
-);
+  );
+};
 export default HeaderNav;
