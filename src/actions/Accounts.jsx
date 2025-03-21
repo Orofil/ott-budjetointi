@@ -35,6 +35,7 @@ export const AccountProvider = ({ children }) => {
     });
     if (error) {
       console.error("Virhe tilin lisäämisessä:", error);
+      setLoading(false);
       return;
     }
     setAccounts((prev) => [...prev, account]);

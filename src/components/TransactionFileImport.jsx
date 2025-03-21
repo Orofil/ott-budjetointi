@@ -8,15 +8,15 @@ import { createTransactions } from "../actions/Transactions";
 import parseCSV from "../actions/CSVParse";
 
 const TransactionFileImport = () => {
-  const { expenseCategories, incomeCategories, loading } = useCategories();
-  const { accounts, addAccount } = useAccounts();
+  const { expenseCategories, incomeCategories, loading: loadingCategories } = useCategories();
+  const { accounts } = useAccounts();
 
   const [tableData, setTableData] = useState([]);
   const columnNames = {
     date: { name:"Päivämäärä", required:true },
     amount: { name:"Summa", required:true },
-    account: { name:"Oma tili", required:true },
-    name: { name:"Toinen osapuoli", required:false }, // TODO vähän ehkä huonot nimet vielä
+    account: { name:"Tili", required:true },
+    name: { name:"Nimi", required:false },
     reference_number: { name:"Viitenumero", required:false },
     category: { name:"Kategoria", required:true },
     description: { name:"Kuvaus", required:false }
@@ -147,6 +147,7 @@ const TransactionFileImport = () => {
                         return (
                           <select
                             required
+                            disabled={loadingCategories}
                             value={row[c]}
                             onChange={(e) => handleInput(rowIndex, c, e.target.value)}
                           >

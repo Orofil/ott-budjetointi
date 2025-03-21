@@ -3,10 +3,11 @@ import { Dropdown, Form, Button, Modal, InputGroup } from "react-bootstrap";
 import { useAccounts } from "../actions/Accounts";
 
 const AccountDropdown = ({ value, onChange }) => {
-  const { accounts, addAccount } = useAccounts();
+  const { accounts, addAccount, loading } = useAccounts();
   const [showModal, setShowModal] = useState(false);
   const [accountNumber, setAccountNumber] = useState(value);
   const [accountName, setAccountName] = useState("");
+  const [message, setMessage] = useState("");
 
   // Ollaanko luomassa uutta vaihtoehtoa
   const isNewValue = accountNumber && !accounts.some((a) => a.account_number == accountNumber);
@@ -22,12 +23,20 @@ const AccountDropdown = ({ value, onChange }) => {
       account_number: accountNumber,
       account_name: accountName
     });
+    if (!data) {
+      setMessage("Virhe tilin lisäämisessä");
+      return;
+    }
     onChange(data);
-
+    
     setShowModal(false);
     setAccountName("");
-    // TODO näytä ilmoitus virheestä muussa tapauksessa
+    setMessage("");
   };
+
+  useEffect(() => {
+    setAccountNumber(value);
+  }, [value]);
 
   return (
     <div style={{ minWidth: "270px", display: "flex", alignItems: "center" }}>
@@ -35,6 +44,7 @@ const AccountDropdown = ({ value, onChange }) => {
         <Form.Control
           type="text"
           placeholder="Valitse tai kirjoita..."
+          disabled={loading}
           value={accountNumber}
           onChange={(e) => {
             setAccountNumber(e.target.value);
@@ -43,7 +53,7 @@ const AccountDropdown = ({ value, onChange }) => {
         />
         <Dropdown>
           <Dropdown.Toggle variant="outline-secondary"></Dropdown.Toggle>
-          <Dropdown.Menu>
+          <Dropdown.Menu disabled={loading}>
             {accounts.map((o) => ( // FIXME tästä taitaa tulla virhe kun lisää uuden tilin, että kaikilla itemeillä pitäisi olla uniikki key
               <Dropdown.Item key={o.id} value={o.account_number} onClick={() => {
                   setAccountNumber(o.account_number);  
@@ -56,7 +66,7 @@ const AccountDropdown = ({ value, onChange }) => {
         </Dropdown>
       </InputGroup>
 
-      {isNewValue && (
+      {isNewValue && !loading && (
         <Button
           onClick={() => setShowModal(true)}
         >
@@ -87,6 +97,9 @@ const AccountDropdown = ({ value, onChange }) => {
               onChange={(e) => setAccountName(e.target.value)}
             />
           </Form.Group>
+          {message && (
+            <p className="text-danger">{message}</p>
+          )}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowModal(false)}>Peruuta</Button>
