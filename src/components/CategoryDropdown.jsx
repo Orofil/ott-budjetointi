@@ -6,8 +6,11 @@ export default function CategoryDropdown({ categoryType }) {
   const { expenseCategories, incomeCategories, loading } = useCategories();
 
   return (
-    <select disabled={loading} name="category">
-      <option value="">Valitse kategoria</option>
+    <select
+    disabled={loading}
+    name="category"
+    value="">
+      <option value="" disabled hidden>Valitse kategoria</option>
       {(categoryType == TransactionCategory.EXPENSE ? expenseCategories : incomeCategories).map((c) => (
         <option key={c.id} value={c.id}>
           {c.category_name}
