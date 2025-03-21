@@ -75,13 +75,6 @@ function Dashboard() {
     ],
   };
 
-  const navigateToTransaction = async () => {
-    navigate("/transaction-import");
-  };
-  const navigateToBudgets = async () => {
-    navigate("/budgets");
-  };
-
   return (
     <Container fluid className="p-4">
       <Row className="justify-content-center">

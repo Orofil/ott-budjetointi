@@ -1,12 +1,11 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import supabase from "../config/supabaseClient";
 
-// TODO poista nämä ylemmät ja korvaa aiemmat tämän käytöt alemmalla
-
 const AccountContext = createContext();
 
 export const AccountProvider = ({ children }) => {
   const [accounts, setAccounts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadAccounts = async () => {
@@ -18,12 +17,14 @@ export const AccountProvider = ({ children }) => {
         .eq("user_id", user.id);
       if (error) console.error("Virhe tilien haussa:", error);
       else setAccounts(data);
+      setLoading(false);
     };
     loadAccounts();
   }, []);
 
   // Uuden tilin lisäys
   const addAccount = async (account) => {
+    setLoading(true);
     // Haetaan kirjautuneen käyttäjän tiedot
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -37,11 +38,13 @@ export const AccountProvider = ({ children }) => {
       return;
     }
     setAccounts((prev) => [...prev, account]);
+    setLoading(false);
+    console.log("Lisätty tili:", data);
     return data;
   };
 
   return (
-    <AccountContext.Provider value={{ accounts, addAccount }}>
+    <AccountContext.Provider value={{ accounts, addAccount, loading }}>
       {children}
     </AccountContext.Provider>
   );

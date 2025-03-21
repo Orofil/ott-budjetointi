@@ -1,0 +1,202 @@
+import React, { useActionState, useEffect, useState } from "react";
+import { TransactionCategory } from "../constants/TransactionCategory";
+import { createTransaction } from "../actions/Transactions";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { Form, Button } from "react-bootstrap";
+import { useCategories } from "../actions/Categories";
+import { useAccounts } from "../actions/Accounts";
+
+function TransactionCreation() {
+  const { expenseCategories, incomeCategories, loading: loadingCategories } = useCategories();
+  const { accounts, loading: loadingAccounts } = useAccounts();
+  
+  const [type, setType] = useState(TransactionCategory.EXPENSE);
+  const [values, setValues] = useState({
+    amount: "",
+    date: "",
+    account: "",
+    name: "",
+    reference_number: "",
+    description: "",
+    category: ""
+  });
+  const [error, setError] = useState([]);
+  const [message, setMessage] = useState("");
+  const [pending, setPending] = useState(false);
+
+  // Päivitetään lomakkeen arvoja
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    if (error.includes(name)) {
+      setError(error.filter((e) => e !== name));
+      setMessage("");
+    }
+    setValues({ ...values, [name]: value });
+    console.log(values);
+  };
+
+  // Tapahtuman tyypin päivitys kun etumerkkiä muutetaan
+  useEffect(() => {
+    const prevType = type;
+    const newType = values.amount.charAt(0) == "-" ? TransactionCategory.EXPENSE : TransactionCategory.INCOME;
+    setType(newType);
+    if (prevType != newType) { // Resetoidaan kategoria jos määrää muutettiin positiivisesta negatiiviseksi tai toisin päin
+      values.category = "";
+    }
+  }, [values.amount]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setPending(true);
+
+    const { amount, date, account, reference_number, category } = values;
+    const errorList = [];
+    if (!amount || Number(amount) == 0) {
+      errorList.push("amount");
+    }
+    if (!date) {
+      errorList.push("date");
+    }
+    if (!account) {
+      errorList.push("account");
+    }
+    // Hyväksytään vain numerot viitenumeroksi
+    const numberRegex = /^\d+$/;
+    if (reference_number && !reference_number.match(numberRegex)) {
+      errorList.push("reference_number");
+    }
+    if (!category) {
+      errorList.push("category");
+    }
+    setError(errorList);
+    setMessage(errorList.length ? "Pakollisia arvoja puuttuu" : "");
+
+    if (!errorList.length) {
+      let data = createTransaction(values);
+      if (data) {
+        setValues({
+          amount: "",
+          date: "",
+          account: "",
+          name: "",
+          reference_number: "",
+          description: "",
+          category: ""
+        });
+      }
+    }
+    setPending(false);
+  };
+
+  return (
+    <Form onSubmit={handleSubmit}>
+      <Form.Group className="mb-3">
+        <Form.Label>Summa <span className="fw-bold text-danger">*</span></Form.Label>
+        <Form.Control
+          className={`fw-bold
+            ${type == TransactionCategory.EXPENSE ? "text-danger" : "text-primary"}
+            ${error.includes("amount") ? "border border-danger" : ""}`} // Puuttuvan kentän reunojen väritys
+          type="number"
+          name="amount"
+          value={values.amount}
+          onInput={handleInputChange} 
+        />
+      </Form.Group>
+
+      <Form.Group className="mb-3">
+        <Form.Label>Päivämäärä <span className="fw-bold text-danger">*</span></Form.Label>
+        <Form.Control
+          type="date"
+          name="date"
+          max={new Date().toISOString().slice(0, 10)} // Ei voi valita tulevaisuudesta päivää
+          value={values.date}
+          onInput={handleInputChange}
+          className={error.includes("date") ? "border border-danger" : ""}
+        />
+      </Form.Group>
+
+      <Form.Group className="mb-3">
+        <Form.Label>Tili <span className="fw-bold text-danger">*</span></Form.Label>
+        <Form.Select
+          name="account"
+          disabled={loadingAccounts}
+          value={values.account}
+          onInput={handleInputChange}
+          className={error.includes("account") ? "border border-danger" : ""}
+        >
+          <option value="" disabled hidden>Valitse tili</option>
+          {accounts.map((a) => (
+            <option key={a.id} value={a.id}>
+              {a.account_name ? `${a.account_name} (${a.account_number})` : a.account_number}
+            </option>
+          ))}
+        </Form.Select>
+      </Form.Group>
+
+      <Form.Group className="mb-3">
+        <Form.Label>{type == TransactionCategory.EXPENSE ? "Saaja" : "Maksaja"}</Form.Label>
+        <Form.Control
+        type="text"
+        name="name"
+        value={values.name}
+        onInput={handleInputChange}
+        />
+      </Form.Group>
+
+      <Form.Group className="mb-3">
+        <Form.Label>Viitenumero</Form.Label>
+        <Form.Control
+        type="text"
+        name="reference_number"
+        inputMode="numeric"
+        value={values.reference_number}
+        onInput={handleInputChange}
+        className={error.includes("reference_number") ? "border border-danger" : ""}
+        />
+      </Form.Group>
+
+      <Form.Group className="mb-3">
+        <Form.Label>Kuvaus</Form.Label>
+        <Form.Control
+        as="textarea"
+        name="description"
+        value={values.description}
+        onInput={handleInputChange} />
+      </Form.Group>
+
+      <Form.Group className="mb-3">
+        <Form.Label>Kategoria <span className="fw-bold text-danger">*</span></Form.Label>
+        <Form.Select
+          name="category"
+          disabled={loadingCategories}
+          value={values.category}
+          onInput={handleInputChange}
+          className={error.includes("category") ? "border border-danger" : ""}
+        >
+          <option value="" disabled hidden>Valitse kategoria</option>
+          {(type == TransactionCategory.EXPENSE ? expenseCategories : incomeCategories).map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.category_name}
+            </option>
+          ))}
+        </Form.Select>
+      </Form.Group>
+
+      {message && (
+        <p className="text-danger fw-bold">{message}</p>
+      )}
+
+      {/* Lähetä-painike, joka on estetty kun tapahtuma on käsittelyssä */}
+      <Button
+        variant="primary"
+        type="submit"
+        disabled={pending}
+        className="w-100"
+      >
+        {pending ? "Lisätään..." : "Lisää"}
+      </Button>
+    </Form>
+  );
+}
+
+export default TransactionCreation;

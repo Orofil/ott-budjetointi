@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { loadTransactions } from "../actions/Transactions";
-import { Stack } from "react-bootstrap";
+import { Button, Container, Stack } from "react-bootstrap";
 import TransactionContainer from "./TransactionContainer";
 
 export default function TransactionList() {
@@ -18,7 +18,7 @@ export default function TransactionList() {
     setLoading(true);
 
     const data = await loadTransactions(offset, PAGE_LIMIT);
-    if (data == null) {
+    if (!data.length) {
       console.log("Tapahtumia ei löytynyt!");
       return;
     };
@@ -40,21 +40,27 @@ export default function TransactionList() {
   }, []);
 
   return (
-    <div>
-      <Stack gap={2} className="mx-auto w-100" style={{ maxWidth: "60em" }}>
+    <Container className="my-4 mx-auto w-100" style={{ maxWidth: "60em" }}>
+      <Stack gap={2}>
         {transactions.map((t) => (
           <TransactionContainer key={t.type + ":" + t.id} transaction={t} /> // TODO onClick ja modal
         ))}
       </Stack>
 
-      {/* TODO testaa toimiiko */}
-      {!transactions && (
-        <p>Ei tilitapahtumia</p>
+      {!transactions.length && (
+        <p className="fst-italic text-center">Ei tilitapahtumia</p>
       )}
 
       {hasMore && (
-        <button type="button" disabled={loading} onClick={loadMore}>Lataa lisää...</button>
+        <Button
+          type="button"
+          className="my-4 w-100"
+          disabled={loading}
+          onClick={loadMore}
+        >
+          Lataa lisää...
+        </Button>
       )}
-    </div>
+    </Container>
   );
 }

@@ -1,0 +1,4 @@
+/* Puuttuvat arvot lomakkeissa */
+.error {
+  border: red solid 1px;
+}

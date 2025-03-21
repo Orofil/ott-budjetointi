@@ -38,7 +38,7 @@ const AccountDropdown = ({ value, onChange }) => {
           value={accountNumber}
           onChange={(e) => {
             setAccountNumber(e.target.value);
-            onChange(isNewValue ? "" : accounts.find((a) => a.account_number == e.target.value).id);
+            onChange(isNewValue ? "" : accounts.find((a) => a.account_number == e.target.value)?.id || "");
           }}
         />
         <Dropdown>
@@ -74,6 +74,7 @@ const AccountDropdown = ({ value, onChange }) => {
             <Form.Label>Tilinumero</Form.Label>
             <Form.Control
               type="text"
+              required
               value={accountNumber}
               onChange={(e) => setAccountNumber(e.target.value)}
             />
