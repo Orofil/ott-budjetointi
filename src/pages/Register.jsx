@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import supabase from "../config/supabaseClient";
 import { Link } from "react-router-dom";
 import { AuthWeakPasswordError, isAuthWeakPasswordError } from "@supabase/supabase-js";
+import { Form, Col, Card, Button } from "react-bootstrap";
 
 function Register() {
   const [email, setEmail] = useState("");
@@ -45,39 +46,57 @@ function Register() {
   };
 
   return (
-    <div>
-      <h2>Rekisteröidy</h2>
-      <br />
-      {message && <span>{message}</span>}
+    <Col>
+     
+     <div className="d-flex flex-column align-items-center" style={{ paddingTop: "10vh", paddingBottom: "0vh"}} >
+       <Card className="shadow p-4">
+         <Card.Body className="text-center"><h2>Rekisteröidy tästä</h2> <p></p></Card.Body>
+ 
+       <Form onSubmit={handleSubmit}>
+            <Form.Group className="mb-3">
+              <Form.Label className= "fw-bold">Sähköposti</Form.Label>
+              <Form.Control 
+                  onChange={(e) => setEmail(e.target.value)}
+                  value={email}
+                  type="email"
+                  placeholder="Sähköposti"
+                  required
+              />
+            </Form.Group>
 
-      <form onSubmit={handleSubmit}>
-        <input
-          onChange={(e) => setEmail(e.target.value)}
-          value={email}
-          type="email"
-          placeholder="Sähköposti"
-          required
-        />
-        <input
-          onChange={(e) => setPassword(e.target.value)}
-          value={password}
-          type="password"
-          placeholder="Salasana"
-          required
-        />
-        <button type="submit">Luo tili</button>
-      </form>
+            <Form.Group className="mb-3">
+              <Form.Label className= "fw-bold">Salasana</Form.Label>
+              <Form.Control
+                  onChange={(e) => setPassword(e.target.value)}
+                  value={password}
+                  type="password"
+                  placeholder="Salasana"
+                  required
+              />
+            </Form.Group>
 
-      {emailSent && (
-        <div>
-          <p>Jos et ole saanut vahvistuslinkkiä, pyydä se uudelleen:</p>
-          <button onClick={resendEmail}>Lähetä vahvistuslinkki uudelleen</button>
-        </div>
-      )}
+            <Button variant="primary" type="submit" className="w-100">
+              Luo tili
+            </Button>
+          </Form>
 
-      <span>Onko sinulla jo tili?</span>
-      <Link to="/login">Kirjaudu sisään</Link>
-    </div>
+          {emailSent && (
+            <div className="mt-3 text-center">
+              <p>Jos et ole saanut vahvistuslinkkiä, pyydä se uudelleen:</p>
+              <Button variant="link" onClick={resendEmail}>Lähetä vahvistuslinkki uudelleen</Button>
+            </div>
+          )}
+
+          <hr />
+
+          <div className="text-center">
+            <span>Onko sinulla jo tili?</span> <br />
+            <Link to="/login" className="btn btn-outline-primary mt-2">Kirjaudu sisään</Link>
+          </div>
+        
+      </Card>
+      </div>
+    </Col>
   );
 }
 
