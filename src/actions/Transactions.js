@@ -1,4 +1,5 @@
 import supabase from "../config/supabaseClient";
+import { TransactionCategory } from "../constants/TransactionCategory";
 
 export const createTransaction = async (t) => {
   // Lisätään tapahtuma
@@ -38,7 +39,7 @@ export const createTransactions = async (transactions) => {
       return;
     }
   }
-}
+};
 
 export const loadTransactions = async (offset, pageLimit) => {
   // Haetaan kirjautuneen käyttäjän tiedot
@@ -56,3 +57,34 @@ export const loadTransactions = async (offset, pageLimit) => {
   }
   return data;
 };
+
+export const deleteTransaction = async (type, id) => {
+  // Haetaan kirjautuneen käyttäjän tiedot
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // Tarkistetaan kuuluuko tapahtuma kirjautuneelle käyttäjälle
+  const { error } = await supabase
+    .from("all_transactions")
+    .select()
+    .eq("type", type.types[0])
+    .eq("user_id", user.id)
+    .eq("id", id);
+  
+  if (error) {
+    console.error("Poistettavaa tapahtumaa ei löydy:", error);
+    return null;
+  }
+
+  const { data, error1 } = await supabase
+    .from(type == TransactionCategory.EXPENSE ? "expense_transactions" : "income_transactions")
+    .delete()
+    .eq("id", id)
+    .select();
+  
+  if (error1) {
+    console.error("Virhe tapahtuman poistossa:", error1);
+    return null;
+  }
+  console.log("Tapahtuma poistettu:", data);
+  return data;
+}

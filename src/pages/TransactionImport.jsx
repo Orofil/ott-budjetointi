@@ -2,7 +2,7 @@ import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Container, Row, Col, Card } from "react-bootstrap";
 import TransactionFileImport from "../components/TransactionFileImport";
-import TransactionCreation from "../components/TransactionCreation";
+import TransactionEditView from "../components/TransactionEditView";
 
 function TransactionImport() {
   return (
@@ -13,7 +13,7 @@ function TransactionImport() {
           <Card className="shadow p-4">
             <Card.Body>
               <h2 className="text-center mb-4">Lisää pankkitapahtuma</h2>
-              <TransactionCreation /> {/* Lomake pankkitapahtuman lisäämiseksi */}
+              <TransactionEditView /> {/* Lomake pankkitapahtuman lisäämiseksi */}
             </Card.Body>
           </Card>
           {/* Kortti tiedoston tuonnille */}

@@ -1,24 +1,25 @@
 import React, { useActionState, useEffect, useState } from "react";
 import { TransactionCategory } from "../constants/TransactionCategory";
-import { createTransaction } from "../actions/Transactions";
+import { createTransaction, deleteTransaction } from "../actions/Transactions";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Form, Button } from "react-bootstrap";
+import { Form, Button, Row, Col } from "react-bootstrap";
 import { useCategories } from "../actions/Categories";
 import { useAccounts } from "../actions/Accounts";
 
-function TransactionCreation() {
+function TransactionEditView({ data, onSubmit }) {
   const { expenseCategories, incomeCategories, loading: loadingCategories } = useCategories();
   const { accounts, loading: loadingAccounts } = useAccounts();
   
   const [type, setType] = useState(TransactionCategory.EXPENSE);
   const [values, setValues] = useState({
-    amount: "",
-    date: "",
-    account: "",
-    name: "",
-    reference_number: "",
-    description: "",
-    category: ""
+    id: data.id || "",
+    amount: data.amount || "",
+    date: data.date || "",
+    account: data.own_account || "",
+    name: data.other_account || "",
+    reference_number: data.reference_number || "",
+    description: data.description || "",
+    category: data.category_id || ""
   });
   const [error, setError] = useState([]);
   const [message, setMessage] = useState("");
@@ -32,23 +33,28 @@ function TransactionCreation() {
       setMessage("");
     }
     setValues({ ...values, [name]: value });
-    console.log(values);
   };
 
   // Tapahtuman tyypin päivitys kun etumerkkiä muutetaan
   useEffect(() => {
     const prevType = type;
-    const newType = values.amount.charAt(0) == "-" ? TransactionCategory.EXPENSE : TransactionCategory.INCOME;
+    const newType = String(values.amount).charAt(0) == "-" ? TransactionCategory.EXPENSE : TransactionCategory.INCOME;
     setType(newType);
     if (prevType != newType) { // Resetoidaan kategoria jos määrää muutettiin positiivisesta negatiiviseksi tai toisin päin
       values.category = "";
     }
   }, [values.amount]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setPending(true);
+  const handleDelete = () => {
+    const confirmDelete = window.confirm("Poistetaanko tapahtuma?");
+    if (confirmDelete) {
+      let result = deleteTransaction(type, values.id);
+      if (result != null && result.length) return true;
+    };
+    return false;
+  }
 
+  const handleCreateOrEdit = () => {
     const { amount, date, account, reference_number, category } = values;
     const errorList = [];
     if (!amount || Number(amount) == 0) {
@@ -84,7 +90,23 @@ function TransactionCreation() {
           category: ""
         });
       }
+      return true;
     }
+    return false;
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setPending(true);
+    // Suoritetaan eri funktio riippuen painetun painikkeen nimestä
+    const buttonName = e.nativeEvent.submitter.name;
+    let success;
+    if (buttonName === "send") {
+      success = handleCreateOrEdit();
+    } else if (buttonName === "delete") {
+      success = handleDelete();
+    }
+    onSubmit(success);
     setPending(false);
   };
 
@@ -186,17 +208,39 @@ function TransactionCreation() {
         <p className="text-danger fw-bold">{message}</p>
       )}
 
-      {/* Lähetä-painike, joka on estetty kun tapahtuma on käsittelyssä */}
-      <Button
-        variant="primary"
-        type="submit"
-        disabled={pending}
-        className="w-100"
-      >
-        {pending ? "Lisätään..." : "Lisää"}
-      </Button>
+      <Row className="gx-2">
+        {/* Poistamispainike */}
+        {values.id && (
+          <Col xs="3">
+            <Button
+              variant="danger"
+              type="submit"
+              name="delete"
+              disabled={pending}
+              className="w-100"
+            >
+              {pending ? "Poistetaan..." : "Poista"}
+            </Button>
+          </Col>
+        )}
+        {/* Lähetä-painike, joka on estetty kun tapahtuma on käsittelyssä */}
+        <Col xs="9">
+          <Button
+            variant="primary"
+            type="submit"
+            name="send"
+            disabled={pending}
+            className="w-100"
+          >
+            {pending ? "Tallennetaan..." : "Tallenna"}
+          </Button>
+        </Col>
+      </Row>
+      
+
+      
     </Form>
   );
 }
 
-export default TransactionCreation;
+export default TransactionEditView;

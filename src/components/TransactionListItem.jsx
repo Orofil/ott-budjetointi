@@ -4,9 +4,9 @@ import { ArrowsAngleExpand } from "react-bootstrap-icons";
 import { useCategories } from "../actions/Categories";
 import { useAccounts } from "../actions/Accounts";
 
-const TransactionContainer = ({ transaction, onClick }) => {
+const TransactionListItem = ({ transaction, onClick }) => {
   const { expenseCategories, incomeCategories, loading } = useCategories();
-  const { accounts, addAccount } = useAccounts();
+  const { accounts } = useAccounts();
 
   return (
     <Button
@@ -22,7 +22,7 @@ const TransactionContainer = ({ transaction, onClick }) => {
 
           <Col xs="3">
             <div className="fw-semibold">{transaction.other_account}</div>
-            <div className="text-muted small">{accounts.find(a => a.id === transaction.own_account)?.account_number || "Ladataan..."}</div> {/* TODO tilin nimi myös, tai vain jompi kumpi */}
+            <div className="text-muted small">{accounts.find(a => a.id === transaction.own_account)?.account_number || "Ladataan..."}</div>
           </Col>
 
           <Col xs="2" className="text-muted small">
@@ -42,4 +42,4 @@ const TransactionContainer = ({ transaction, onClick }) => {
   );
 };
 
-export default TransactionContainer;
+export default TransactionListItem;

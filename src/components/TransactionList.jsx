@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { loadTransactions } from "../actions/Transactions";
-import { Button, Container, Stack } from "react-bootstrap";
-import TransactionContainer from "./TransactionContainer";
+import { Button, Container, Modal, Stack } from "react-bootstrap";
+import TransactionListItem from "./TransactionListItem";
+import TransactionEditView from "./TransactionEditView";
 
 export default function TransactionList() {
   const [transactions, setTransactions] = useState([]);
@@ -9,6 +10,8 @@ export default function TransactionList() {
   const [hasMore, setHasMore] = useState(false); // Onko tapahtumia vielä haettavana
   const [loading, setLoading] = useState(false);
   const loadingLock = useRef(false); // Lukitsee tapahtumien lataamiseen vain yhteen samanaikaiseen suoritukseen
+  const [showModal, setShowModal] = useState(false);
+  const [selectedData, setSelectedData] = useState();
 
   const PAGE_LIMIT = 20;
 
@@ -39,11 +42,19 @@ export default function TransactionList() {
     loadMore();
   }, []);
 
+  const selectTransaction = (data) => {
+    setSelectedData(data);
+    setShowModal(true);
+  }
+
   return (
     <Container className="my-4 mx-auto w-100" style={{ maxWidth: "60em" }}>
       <Stack gap={2}>
         {transactions.map((t) => (
-          <TransactionContainer key={t.type + ":" + t.id} transaction={t} /> // TODO onClick ja modal
+          <TransactionListItem
+          key={t.type + ":" + t.id}
+          transaction={t}
+          onClick={() => selectTransaction(t)} />
         ))}
       </Stack>
 
@@ -61,6 +72,17 @@ export default function TransactionList() {
           Lataa lisää...
         </Button>
       )}
+
+      <Modal size="lg" show={showModal} onHide={() => setShowModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Muokkaa tilitapahtumaa</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <TransactionEditView data={selectedData} onSubmit={success => {
+            if (success) setShowModal(false);
+          }} />
+        </Modal.Body>
+      </Modal>
     </Container>
   );
 }
