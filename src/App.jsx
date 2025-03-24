@@ -14,6 +14,7 @@ import Settings from "./pages/Settings";
 import HeaderNav from "./components/HeaderNav";
 import { CategoryProvider } from "./actions/Categories";
 import { AccountProvider } from "./actions/Accounts";
+import { TransactionProvider } from "./actions/Transactions";
 
 
 function App() {
@@ -48,6 +49,7 @@ function App() {
   }, []);
 
   return (
+    <TransactionProvider>
     <AccountProvider>
     <CategoryProvider>
     <BrowserRouter>
@@ -79,6 +81,7 @@ function App() {
     </BrowserRouter>
     </CategoryProvider>
     </AccountProvider>
+    </TransactionProvider>
   );
 }
 

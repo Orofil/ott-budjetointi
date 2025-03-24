@@ -1,12 +1,13 @@
-import React, { useActionState, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { TransactionCategory } from "../constants/TransactionCategory";
-import { createTransaction, deleteTransaction } from "../actions/Transactions";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Form, Button, Row, Col } from "react-bootstrap";
 import { useCategories } from "../actions/Categories";
 import { useAccounts } from "../actions/Accounts";
+import { useTransactions } from "../actions/Transactions";
 
 function TransactionEditView({ data, onSubmit }) {
+  const { createTransaction, deleteTransaction } = useTransactions();
   const { expenseCategories, incomeCategories, loading: loadingCategories } = useCategories();
   const { accounts, loading: loadingAccounts } = useAccounts();
   
@@ -78,7 +79,7 @@ function TransactionEditView({ data, onSubmit }) {
     setMessage(errorList.length ? "Pakollisia arvoja puuttuu" : "");
 
     if (!errorList.length) {
-      let data = createTransaction(values);
+      let data = values.id ? updateTransaction() : createTransaction(values);
       if (data) {
         setValues({
           amount: "",
