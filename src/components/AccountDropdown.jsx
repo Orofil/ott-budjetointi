@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Dropdown, Form, Button, Modal, InputGroup } from "react-bootstrap";
 import { useAccounts } from "../actions/Accounts";
 
-const AccountDropdown = ({ value, onChange }) => {
+const AccountDropdown = ({ value, onChange, disabled }) => {
   const { accounts, addAccount, loading } = useAccounts();
   const [showModal, setShowModal] = useState(false);
   const [accountNumber, setAccountNumber] = useState(value);
@@ -44,7 +44,7 @@ const AccountDropdown = ({ value, onChange }) => {
         <Form.Control
           type="text"
           placeholder="Valitse tai kirjoita..."
-          disabled={loading}
+          disabled={loading || disabled}
           value={accountNumber}
           onChange={(e) => {
             setAccountNumber(e.target.value);
@@ -52,8 +52,8 @@ const AccountDropdown = ({ value, onChange }) => {
           }}
         />
         <Dropdown>
-          <Dropdown.Toggle variant="outline-secondary"></Dropdown.Toggle>
-          <Dropdown.Menu disabled={loading}>
+          <Dropdown.Toggle variant="outline-secondary" disabled={loading || disabled}></Dropdown.Toggle>
+          <Dropdown.Menu>
             {accounts.map((o) => ( // FIXME tästä taitaa tulla virhe kun lisää uuden tilin, että kaikilla itemeillä pitäisi olla uniikki key
               <Dropdown.Item key={o.id} value={o.account_number} onClick={() => {
                   setAccountNumber(o.account_number);  
@@ -69,6 +69,7 @@ const AccountDropdown = ({ value, onChange }) => {
       {isNewValue && !loading && (
         <Button
           onClick={() => setShowModal(true)}
+          disabled={disabled}
         >
           +
         </Button>

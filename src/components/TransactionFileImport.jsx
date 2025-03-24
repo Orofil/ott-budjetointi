@@ -12,6 +12,7 @@ const TransactionFileImport = () => {
   const { accounts } = useAccounts();
 
   const [tableData, setTableData] = useState([]);
+  const [savedRows, setSavedRows] = useState([]); // Mitkä riveistä tallennetaan
   const columnNames = {
     date: { name:"Päivämäärä", required:true },
     amount: { name:"Summa", required:true },
@@ -39,8 +40,10 @@ const TransactionFileImport = () => {
 
     // Luetaan tiedosto taulukoksi
     Papa.parse(file, {
-      complete: (result) => 
-        setTableData(parseCSV(result.data, accounts)),
+      complete: (result) => {
+        setTableData(parseCSV(result.data, accounts));
+        setSavedRows(Array(result.data.length).fill(true)); // TODO olemassa olevien rivien tarkistus
+      },
       header: false,
       skipEmptyLines: true,
     });
@@ -56,20 +59,25 @@ const TransactionFileImport = () => {
     setTableData(newData);
   };
 
-  const deleteRow = (rowIndex) => {
-    const confirmDelete = window.confirm("Poistetaanko tapahtuma?");
-    if (confirmDelete) {
-      setTableData((prev) => prev.filter((_, index) => index !== rowIndex));
-    }
-  }
+  const checkRow = (rowIndex, value) => {
+    const newData = [...savedRows];
+    newData[rowIndex] = value;
+    setSavedRows(newData);
+  };
 
   const saveTransactions = async (event) => {
     event.preventDefault();
     setPending(true);
 
-    // Pakollisten tietojen tarkistus
+    // Tallennetaan ne rivit joiden checkboxit on valittu
+    const saveData = [];
     for (let i = 0; i < tableData.length; i++) {
-      let row = tableData[i];
+      if (savedRows[i]) saveData.push(tableData[i]);
+    }
+
+    // Pakollisten tietojen tarkistus
+    for (let i = 0; i < saveData.length; i++) {
+      let row = saveData[i];
       if (Number(row.amount) == 0) {
         setMessage("Summa ei voi olla nolla");
         setPending(false);
@@ -85,9 +93,11 @@ const TransactionFileImport = () => {
       }
     }
 
-    await createTransactions(tableData);
+    await createTransactions(saveData);
     setMessage("");
     setPending(false);
+    setTableData([]);
+    setSavedRows([]);
   };
   
   return (
@@ -104,6 +114,8 @@ const TransactionFileImport = () => {
           <thead>
             {/* Otsikkorivi */}
             <tr>
+              {/* Checkboxien sarake */}
+              <th />
               {columnPositions.map((col, index) => (
                 <th key={index} className="border border-gray-500 p-2">
                   {columnNames[col].name} {columnNames[col].required &&
@@ -111,13 +123,18 @@ const TransactionFileImport = () => {
                   }
                 </th>
               ))}
-              {/* Poistamispainikkeiden sarake */}
-              <th />
             </tr>
           </thead>
           <tbody>
             {tableData.map((row, rowIndex) => (
               <tr key={rowIndex}>
+                {/* Tallennetaanko rivi vai ei */}
+                <td>
+                  <input
+                  type="checkbox"
+                  checked={savedRows[rowIndex]}
+                  onChange={(e) => checkRow(rowIndex, e.target.checked)} />
+                </td>
                 {columnPositions.map((col, colIndex) => {
                   const createInput = (c) => {
                     // Inputin tyyppi riippuu sarakkeen datatyypistä
@@ -128,7 +145,8 @@ const TransactionFileImport = () => {
                         required
                         max={new Date().toISOString().slice(0, 10)} // Ei voi valita tulevaisuudesta päivää
                         value={row[c]}
-                        onChange={(e) => handleInput(rowIndex, c, e.target.value)} />;
+                        onChange={(e) => handleInput(rowIndex, c, e.target.value)}
+                        disabled={!savedRows[rowIndex]} />;
                       case "amount":
                         return <input
                         type="number"
@@ -136,18 +154,20 @@ const TransactionFileImport = () => {
                         step=".01"
                         inputMode="decimal"
                         value={row[c]}
-                        onChange={(e) => handleInput(rowIndex, c, e.target.value)} />;
+                        onChange={(e) => handleInput(rowIndex, c, e.target.value)}
+                        disabled={!savedRows[rowIndex]} />;
                       case "reference_number":
                         return <input
                         type="text"
                         inputMode="numeric"
                         value={row[c]}
-                        onChange={(e) => handleInput(rowIndex, c, e.target.value)} />; // TODO rajoitetaan input vain numeroihin
+                        onChange={(e) => handleInput(rowIndex, c, e.target.value)}
+                        disabled={!savedRows[rowIndex]} />; // TODO rajoitetaan input vain numeroihin
                       case "category":
                         return (
                           <select
                             required
-                            disabled={loadingCategories}
+                            disabled={loadingCategories || !savedRows[rowIndex]}
                             value={row[c]}
                             onChange={(e) => handleInput(rowIndex, c, e.target.value)}
                           >
@@ -161,15 +181,17 @@ const TransactionFileImport = () => {
                         );
                       case "account":
                         return <AccountDropdown
-                        value={row["account_number"]} // TODO tämän näyttämän tekstin pitäisi muuttua kun value muuttuu
-                        onChange={(e) => handleInput(rowIndex, c, e)} />
+                        value={row["account_number"]}
+                        onChange={(e) => handleInput(rowIndex, c, e)}
+                        disabled={!savedRows[rowIndex]} />
                       case "name":
                       case "description":
                       default:
                         return <input
                         type="text"
                         value={row[c]}
-                        onChange={(e) => handleInput(rowIndex, c, e.target.value)} />;
+                        onChange={(e) => handleInput(rowIndex, c, e.target.value)}
+                        disabled={!savedRows[rowIndex]} />;
                     }
                   };
           
@@ -179,14 +201,6 @@ const TransactionFileImport = () => {
                     </td>
                   );
                 })}
-                {/* Poistamispainike */}
-                <td>
-                  <Button
-                    onClick={() => deleteRow(rowIndex)}
-                  >
-                    Poista
-                  </Button>
-                </td>
               </tr>
             ))}
           </tbody>

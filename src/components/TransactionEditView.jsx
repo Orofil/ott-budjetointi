@@ -12,14 +12,14 @@ function TransactionEditView({ data, onSubmit }) {
   
   const [type, setType] = useState(TransactionCategory.EXPENSE);
   const [values, setValues] = useState({
-    id: data.id || "",
-    amount: data.amount || "",
-    date: data.date || "",
-    account: data.own_account || "",
-    name: data.other_account || "",
-    reference_number: data.reference_number || "",
-    description: data.description || "",
-    category: data.category_id || ""
+    id: data?.id || "",
+    amount: data?.amount || "",
+    date: data?.date || "",
+    account: data?.own_account || "",
+    name: data?.other_account || "",
+    reference_number: data?.reference_number || "",
+    description: data?.description || "",
+    category: data?.category_id || ""
   });
   const [error, setError] = useState([]);
   const [message, setMessage] = useState("");
@@ -224,7 +224,7 @@ function TransactionEditView({ data, onSubmit }) {
           </Col>
         )}
         {/* Lähetä-painike, joka on estetty kun tapahtuma on käsittelyssä */}
-        <Col xs="9">
+        <Col xs={values.id ? "9" : "12"}>
           <Button
             variant="primary"
             type="submit"
