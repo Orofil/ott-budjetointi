@@ -10,9 +10,11 @@ import Dashboard from "./pages/Dashboard";
 import TransactionImport from "./pages/TransactionImport";
 import Budgets from "./pages/Budgets";
 import CreateBudgetPage from "./pages/CreateBudget";
+import Settings from "./pages/Settings";
 import HeaderNav from "./components/HeaderNav";
 import { CategoryProvider } from "./actions/Categories";
 import { AccountProvider } from "./actions/Accounts";
+
 
 function App() {
   const [user, setUser] = useState(null);
@@ -62,6 +64,7 @@ function App() {
             <Route path="/transaction-import" element={<TransactionImport />} />
             <Route path="/budgets" element={<Budgets />} />
             <Route path="/create-budget" element={<CreateBudgetPage />} />
+            <Route path="/settings" element={<Settings/>} />
 
             {/* Suojattu reitti */}
             <Route

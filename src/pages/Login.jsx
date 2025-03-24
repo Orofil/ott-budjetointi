@@ -1,7 +1,7 @@
 import React, { useState } from "react"; 
 import supabase from "../config/supabaseClient"; 
 import { Link, useNavigate } from "react-router-dom";
-import { Row, Col, Form, Button } from "react-bootstrap";
+import { Row, Col, Form, Button, Card } from "react-bootstrap";
 
 function Login() {
 
@@ -63,14 +63,16 @@ function Login() {
 
   return (
     <Col>
+     
       <div className="d-flex flex-column align-items-center" style={{ paddingTop: "20vh", paddingBottom: "0vh"}} >
-        <Row><h2>Kirjaudu sisään</h2> <p></p></Row>
+        <Card className="shadow p-4">
+          <Card.Body className="text-center"><h2>Kirjaudu sisään</h2> <p></p></Card.Body>
   
         <Form onSubmit={handleSubmit}>
           {/* Käyttäjätunnus */}
           <Row className="mb-3 w-100 justify-content-center">
             <Col xs={6} md={4} className="text-end fw-bold">Sähköposti</Col>
-            <Col xs={6} md={4}>
+            <Col xs={4} md={6}>
               <Form.Control
                 onChange={(e) => setEmail(e.target.value)}  // Päivitetään sähköposti-tila
                 value={email}
@@ -85,7 +87,7 @@ function Login() {
           {/* Salasana */}
           <Row className="mb-3 w-100 justify-content-center">
             <Col xs={6} md={4} className="text-end fw-bold">Salasana</Col>
-            <Col xs={6} md={4}>
+            <Col xs={4} md={6}>
               <Form.Control
                 onChange={(e) => setPassword(e.target.value)}  // Päivitetään salasana-tila
                 value={password}
@@ -111,7 +113,7 @@ function Login() {
           {/* Kirjaudu - nappi sekä linkit - unohtunut salasana & rekisteröidy tästä */}
           <Row className="mb-3 w-100 justify-content-center">
             
-            <Col xs={4} md={2} className="text-start">
+            <Col xs={4} md={6} className="text-start">
               <div className="text-muted fst-italic" style={{ cursor: "pointer" }}>
                 <a href="#" className="text-decoration-none">Unohtunut salasana?</a> {/* TODO toiminnallisuus puuttuu */}
               </div>
@@ -123,12 +125,14 @@ function Login() {
                 </Link>
               </div>
             </Col>
-            <Col xs={4} md={2}>
+            <Col xs={4} md={4}>
               <Button type="submit" color= 'white'>Kirjaudu</Button>
             </Col>
           </Row>
         </Form>
+      </Card>
       </div>
+      
     </Col>
   );
 }

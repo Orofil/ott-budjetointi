@@ -54,7 +54,7 @@ const HeaderNav = () => {
           <Nav.Link as={Link} to="/budgets" className="text-white mx-3">
             Budjettien hallinta
           </Nav.Link>
-          <Nav.Link as={Link} to="#" className="text-white mx-3">
+          <Nav.Link as={Link} to="/settings" className="text-white mx-3">
             Asetukset
           </Nav.Link>
         </Nav>
@@ -105,7 +105,7 @@ const HeaderNav = () => {
               <Nav.Link as={Link} to="/budgets">
                 Budjettien hallinta
               </Nav.Link>
-              <Nav.Link as={Link} to="#">
+              <Nav.Link as={Link} to="/settings">
                 Asetukset
               </Nav.Link>
             </Nav>
