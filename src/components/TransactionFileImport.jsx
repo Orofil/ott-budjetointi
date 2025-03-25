@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Papa from "papaparse";
 import { useCategories } from "../actions/Categories";
 import { Button } from "react-bootstrap";
 import { useAccounts } from "../actions/Accounts";
 import AccountDropdown from "./AccountDropdown";
-import { createTransactions } from "../actions/Transactions";
+import { createTransactions, getTransaction } from "../actions/Transactions";
 import parseCSV from "../actions/CSVParse";
 
 const TransactionFileImport = () => {
@@ -33,6 +33,7 @@ const TransactionFileImport = () => {
   ]
   const [isPending, setPending] = useState(false);
   const [message, setMessage] = useState(""); // Ilmoitus puuttuvista arvoista tai virheestä
+  const [dataReceived, setDataReceived] = useState(false); // Milloin tarkistetaan mitkä tapahtuman on jo ehkä lisätty tietokantaan
 
   const fileUploadAndParse = async (event) => {
     const file = event.target.files[0];
@@ -42,12 +43,31 @@ const TransactionFileImport = () => {
     Papa.parse(file, {
       complete: (result) => {
         setTableData(parseCSV(result.data, accounts));
-        setSavedRows(Array(result.data.length).fill(true)); // TODO olemassa olevien rivien tarkistus
+        setSavedRows(Array(result.data.length).fill(true));
+        setDataReceived(true);
       },
       header: false,
       skipEmptyLines: true,
     });
   };
+
+  // Tarkistetaan mitkä tapahtumat on jo ehkä lisätty tietokantaan
+  useEffect(() => {
+    const findExistingRows = async () => {
+      for (let i = 0; i < tableData.length; i++) {
+        let newRows = savedRows;
+        let tr = await getTransaction(tableData[i].date, tableData[i].amount, tableData[i].name);
+        if (tr.length) {
+          newRows[i] = false;
+        } else {
+          newRows[i] = true;
+        }
+        setSavedRows(newRows);
+      }
+    };
+    
+    findExistingRows();
+  }, [dataReceived]);
 
   const handleInput = (rowIndex, col, value) => {
     const wasExpense = tableData[rowIndex]["amount"].startsWith("-");

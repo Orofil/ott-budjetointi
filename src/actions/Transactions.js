@@ -58,6 +58,25 @@ export const loadTransactions = async (offset, pageLimit) => {
   return data;
 };
 
+export const getTransaction = async (date, amount, name) => {
+  // Haetaan kirjautuneen käyttäjän tiedot
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const { data, error } = await supabase
+    .from("all_transactions")
+    .select()
+    .eq("user_id", user.id)
+    .eq("date", date)
+    .eq("amount", amount)
+    .eq("other_account", name);
+
+    if (error) {
+      console.error("Virhe tapahtuman haussa:", error);
+      return null;
+    }
+    return data;
+};
+
 export const deleteTransaction = async (type, id) => {
   // Haetaan kirjautuneen käyttäjän tiedot
   const { data: { user } } = await supabase.auth.getUser();
