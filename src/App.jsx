@@ -8,12 +8,13 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import TransactionImport from "./pages/TransactionImport";
-import Budgets from "./pages/Budgets";
+import Budgets from "./pages/BudgetPage";
 import CreateBudgetPage from "./pages/CreateBudget";
 import Settings from "./pages/Settings";
 import HeaderNav from "./components/HeaderNav";
 import { CategoryProvider } from "./actions/Categories";
 import { AccountProvider } from "./actions/Accounts";
+import { BudgetProvider } from "./actions/Budgets";
 
 
 function App() {
@@ -48,6 +49,7 @@ function App() {
   }, []);
 
   return (
+    <BudgetProvider>
     <AccountProvider>
     <CategoryProvider>
     <BrowserRouter>
@@ -79,6 +81,7 @@ function App() {
     </BrowserRouter>
     </CategoryProvider>
     </AccountProvider>
+    </BudgetProvider>
   );
 }
 
