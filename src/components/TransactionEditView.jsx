@@ -1,6 +1,6 @@
 import React, { useActionState, useEffect, useState } from "react";
 import { TransactionCategory } from "../constants/TransactionCategory";
-import { createTransaction, deleteTransaction } from "../actions/Transactions";
+import { createTransaction, deleteTransaction, updateTransaction } from "../actions/Transactions";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Form, Button, Row, Col } from "react-bootstrap";
 import { useCategories } from "../actions/Categories";
@@ -78,7 +78,12 @@ function TransactionEditView({ data, onSubmit }) {
     setMessage(errorList.length ? "Pakollisia arvoja puuttuu" : "");
 
     if (!errorList.length) {
-      let data = createTransaction(values);
+      let data;
+      if (values.id) {
+        data = updateTransaction(values);
+      } else {
+        data = createTransaction(values);
+      }
       if (data) {
         setValues({
           amount: "",
@@ -119,6 +124,7 @@ function TransactionEditView({ data, onSubmit }) {
             ${type == TransactionCategory.EXPENSE ? "text-danger" : "text-primary"}
             ${error.includes("amount") ? "border border-danger" : ""}`} // Puuttuvan kentän reunojen väritys
           type="number"
+          step="0.01"
           name="amount"
           value={values.amount}
           onInput={handleInputChange} 

@@ -66,6 +66,51 @@ SELECT add_transaction(
 );
 
 
+/* Tapahtuman muokkaaminen */
+CREATE OR REPLACE FUNCTION update_transaction(
+    p_id INTEGER,
+    p_date DATE,
+    p_reference_number NUMERIC,
+    p_description TEXT,
+    p_amount NUMERIC,
+    p_account INTEGER,
+    p_name TEXT,
+    p_category_id INTEGER
+) RETURNS INTEGER AS $$
+DECLARE
+    transaction_id INTEGER;
+BEGIN
+    IF p_amount < 0
+    THEN
+      UPDATE public.expense_transactions SET 
+          date = p_date,
+          reference_number = p_reference_number,
+          description = p_description,
+          amount = p_amount, 
+          account_from = p_account,
+          account_to = p_name,
+          category_id = p_category_id
+      WHERE id = p_id
+      RETURNING id INTO transaction_id;
+    ELSE
+      UPDATE public.expense_transactions SET 
+          date = p_date,
+          reference_number = p_reference_number,
+          description = p_description,
+          amount = p_amount, 
+          account_from = p_name,
+          account_to = p_account,
+          category_id = p_category_id
+      WHERE id = p_id
+      RETURNING id INTO transaction_id;
+    END IF;
+
+    -- Palautetaan tapahtuman ID
+    RETURN transaction_id;
+END;
+$$ LANGUAGE plpgsql;
+
+
 /* Uuden kategorian lisääminen*/
 
 CREATE OR REPLACE FUNCTION add_user_category(

@@ -41,6 +41,23 @@ export const createTransactions = async (transactions) => {
   }
 };
 
+export const updateTransaction = async (t) => {
+  // Muokataan tapahtumaa
+  const { data, error } = await supabase.rpc("update_transaction", {
+    p_id: t.id,
+    p_date: t.date,
+    p_reference_number: t.reference_number === "" ? null : Number(t.reference_number),
+    p_description: t.description,
+    p_amount: t.amount,
+    p_account: t.account,
+    p_name: t.name,
+    p_category_id: t.category
+  });
+  if (data != null) console.log("Tapahtuma päivitetty, ID:", data);
+  if (error != null) console.log("Virhe tapahtuman päivityksessä:", error);
+  return data;
+};
+
 export const loadTransactions = async (offset, pageLimit) => {
   // Haetaan kirjautuneen käyttäjän tiedot
   const { data: { user } } = await supabase.auth.getUser();
