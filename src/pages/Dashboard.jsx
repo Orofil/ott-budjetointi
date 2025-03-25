@@ -2,7 +2,9 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import supabase from "../config/supabaseClient";
 import TransactionList from "../components/TransactionList";
+import { UserContext } from "../context/UserContext";
 import { Container, Row, Col, Card } from "react-bootstrap";
+import { useContext } from "react";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -12,8 +14,7 @@ import {
   LinearScale,
   BarElement,
 } from "chart.js";
-import { Pie, Bar } from "react-chartjs-2";
-
+import { Pie, Bar } from "react-chartjs-2";   
 import "bootstrap/dist/css/bootstrap.min.css";
 
 ChartJS.register(
@@ -26,21 +27,18 @@ ChartJS.register(
 );
 
 function Dashboard() {
-  const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    // Kirjaudu ulos Supabasesta
-    const { error } = await supabase.auth.signOut();
 
-    if (error) {
-      // Jos uloskirjautumisessa tapahtui virhe, tulostetaan virheilmoitus
-      console.error("Virhe uloskirjautumisessa:", error.message);
-    } else {
-      // Jos uloskirjautuminen onnistui, ohjataan käyttäjä kirjautumissivulle
-      navigate("/login");
-    }
-  };
+  // Haetaan käyttäjätiedot contextista ja tarkistetaan, onko ne ladattu.
+  const { user } = useContext(UserContext); 
 
+  if (!user) {
+    return <div>Loading...</div>; 
+  }
+  
+
+
+ 
   // Määrittää "Budjettia käytetty/jäljellä" -piirakkadiagrammin
   const pieData1 = {
     labels: ["Käytetty (€)", "Jäljellä (€)"],
@@ -77,8 +75,10 @@ function Dashboard() {
 
   return (
     <Container fluid className="p-4">
+
       <Row className="justify-content-center">
         {/* Piirakkadiagrammit */}
+        
         <Col md={6}>
           <Card className="shadow p-4">
             <Card.Body>
