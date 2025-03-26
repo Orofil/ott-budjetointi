@@ -1,10 +1,10 @@
-import React from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import supabase from "../config/supabaseClient";
-import TransactionList from "../components/TransactionList";
 import { UserContext } from "../context/UserContext";
 import { Container, Row, Col, Card } from "react-bootstrap";
-import { useContext } from "react";
+import TransactionList from "../components/TransactionList";
+import AccountSelectionModule from "../components/AccountSelectionModule";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -14,71 +14,90 @@ import {
   LinearScale,
   BarElement,
 } from "chart.js";
-import { Pie, Bar } from "react-chartjs-2";   
-import "bootstrap/dist/css/bootstrap.min.css";
+import { Pie, Bar } from "react-chartjs-2";
 
-ChartJS.register(
-  ArcElement,
-  Tooltip,
-  Legend,
-  CategoryScale,
-  LinearScale,
-  BarElement
-);
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
 function Dashboard() {
+  const { user } = useContext(UserContext);
+  const [showAccountModal, setShowAccountModal] = useState(false);
+  const [selectedAccount, setSelectedAccount] = useState(null); // Tallennetaan valittu tili
+  const navigate = useNavigate();
 
+  // Varmistetaan, että käyttäjä on kirjautunut
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+    } else {
+      const isFirstLogin = sessionStorage.getItem("isFirstLogin");
 
-  // Haetaan käyttäjätiedot contextista ja tarkistetaan, onko ne ladattu.
-  const { user } = useContext(UserContext); 
+      if (isFirstLogin !== "true") {
+        sessionStorage.setItem("isFirstLogin", "true");
+        setShowAccountModal(true); // Avaa tili valintaikkuna ensimmäistä kertaa
+      }
+    }
+  }, [user, navigate]);
 
-  if (!user) {
-    return <div>Loading...</div>; 
-  }
-  
+  // Jos ei ole käyttäjää, näytetään latausruutu
+  if (!user) return <div>Loading...</div>;
 
-
- 
-  // Määrittää "Budjettia käytetty/jäljellä" -piirakkadiagrammin
+  // Esimerkkidata grafiikoille
   const pieData1 = {
     labels: ["Käytetty (€)", "Jäljellä (€)"],
     datasets: [
       {
-        data: [], // Tähän kuinka paljon budjettia käytetty/jäljellä
-        backgroundColor: ["#ffce56", "#36a2eb"], // Tähän eri siivujen värit
+        data: [],
+        backgroundColor: ["#ffce56", "#36a2eb"],
       },
     ],
   };
 
-  // Määrittää "Menot kategorioittain" -piirakkadiagrammin
   const pieData2 = {
-    labels: [], // Tähän kategorioitten nimet
+    labels: [],
     datasets: [
       {
-        data: [], // Tähän menot kategorioittain
-        backgroundColor: [], // Tähän eri siivujen värit
+        data: [],
+        backgroundColor: [],
       },
     ],
   };
 
-  // Määrittää pylväsdiagrammin
   const barData = {
-    labels: [], // Tähän päivän numerot
+    labels: [],
     datasets: [
       {
         label: "Menot (€)",
         backgroundColor: "#36a2eb",
-        data: [], // Tähän menot päivittäin
+        data: [],
       },
     ],
   };
 
   return (
     <Container fluid className="p-4">
+      {/* AccountSelectionModule komponenteja, jotka avautuvat tarvittaessa */}
+      <AccountSelectionModule
+        show={showAccountModal}
+        handleClose={() => setShowAccountModal(false)}
+        userId={user.id}
+        setSelectedAccount={setSelectedAccount}
+      />
 
+      {/* Ylin kortti, jossa näytetään valittu tili */}
       <Row className="justify-content-center">
-        {/* Piirakkadiagrammit */}
-        
+        <Col md={12}>
+          <Card className="shadow p-4">
+            <Card.Body>
+              <h4 className="text-center">
+                {selectedAccount ? `Valittu tili: ${selectedAccount.account_name}` : "Ei valittua tiliä"}
+              </h4>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Muu sisältö Dashboardissa */}
+      <Row className="justify-content-center">
         <Col md={6}>
           <Card className="shadow p-4">
             <Card.Body>
@@ -97,7 +116,6 @@ function Dashboard() {
         </Col>
       </Row>
 
-      {/* Pylväsdiagrammi - Kuukauden menot päivittäin */}
       <Row className="justify-content-center mt-4">
         <Col md={12}>
           <Card className="shadow p-4">
@@ -109,7 +127,6 @@ function Dashboard() {
         </Col>
       </Row>
 
-      {/* Tapahtumalista */}
       <Row className="justify-content-center mt-4">
         <Col md={12}>
           <Card className="shadow p-4">
@@ -125,3 +142,12 @@ function Dashboard() {
 }
 
 export default Dashboard;
+
+
+
+
+
+
+
+
+
