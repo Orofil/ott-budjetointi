@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Button, Form, DropdownButton, Dropdown } from "react-bootstrap";
+import { Modal, Button, Form, DropdownButton, Dropdown, Alert } from "react-bootstrap";
 import supabase from "../config/supabaseClient";
 
 function AccountSelectionModule({ show, handleClose, userId, setSelectedAccount }) {
@@ -8,11 +8,10 @@ function AccountSelectionModule({ show, handleClose, userId, setSelectedAccount 
   const [newAccountName, setNewAccountName] = useState("");
   const [newAccountNumber, setNewAccountNumber] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  useEffect(() => {
-    fetchAccounts();
-  }, [userId]);
-
+  // Tilien haku
   const fetchAccounts = async () => {
     const { data, error } = await supabase
       .from("accounts")
@@ -24,16 +23,23 @@ function AccountSelectionModule({ show, handleClose, userId, setSelectedAccount 
     }
   };
 
+  useEffect(() => {
+    fetchAccounts();
+  }, [userId]);
+
   const handleSelectAccount = (accountId) => {
     const account = accounts.find((acc) => acc.id === Number(accountId));
     setSelectedAccountState(account);
   };
 
   const handleConfirmAccount = () => {
-    if (selectedAccount) {
-      setSelectedAccount(selectedAccount);
-      handleClose();
+    if (!selectedAccount) {
+      setErrorMessage("Sinun on valittava tili ensin. Jos sinulla ei ole vielä tiliä, luo uusi tili.");
+      setShowAlert(true);
+      return;
     }
+    setSelectedAccount(selectedAccount);
+    handleClose();
   };
 
   const handleCreateAccount = async () => {
@@ -44,11 +50,7 @@ function AccountSelectionModule({ show, handleClose, userId, setSelectedAccount 
     const { data, error } = await supabase
       .from("accounts")
       .insert([
-        { 
-          account_name: newAccountName.trim(), 
-          account_number: newAccountNumber.trim(), // Korjattu kentän nimi
-          user_id: userId 
-        },
+        { account_name: newAccountName.trim(), account_number: newAccountNumber.trim(), user_id: userId },
       ])
       .select();
 
@@ -56,6 +58,26 @@ function AccountSelectionModule({ show, handleClose, userId, setSelectedAccount 
       setAccounts([...accounts, data[0]]);
       setNewAccountName("");
       setNewAccountNumber("");
+
+      // Tarkista, onko käyttäjällä tilejä tai kategorioita
+      const { data: existingCategories } = await supabase
+        .from("categories")
+        .select("id")
+        .eq("user_id", userId);
+
+      if (!existingCategories || existingCategories.length === 0) {
+        // Lisää oletuskategoriat
+        await supabase.from("categories").insert([
+          { category_name: "Ruoka", category_type: 1, user_id: userId },
+          { category_name: "Vuokra", category_type: 1, user_id: userId },
+          { category_name: "Liikenne", category_type: 1, user_id: userId },
+          { category_name: "Kulttuuri", category_type: 1, user_id: userId },
+          { category_name: "Hyvinvointi", category_type: 1, user_id: userId },
+          { category_name: "Muut tulot", category_type: 0, user_id: userId },
+          { category_name: "Palkka", category_type: 0, user_id: userId },
+          { category_name: "Tuet ja avustukset", category_type: 0, user_id: userId }
+        ]);
+      }
     }
     setIsCreating(false);
   };
@@ -66,6 +88,8 @@ function AccountSelectionModule({ show, handleClose, userId, setSelectedAccount 
         <Modal.Title>Valitse tili</Modal.Title>
       </Modal.Header>
       <Modal.Body>
+        {showAlert && <Alert variant="danger" onClose={() => setShowAlert(false)} dismissible>{errorMessage}</Alert>}
+
         <Form>
           <Form.Group controlId="accountSelect">
             <Form.Label>Valitse tili:</Form.Label>
@@ -82,16 +106,26 @@ function AccountSelectionModule({ show, handleClose, userId, setSelectedAccount 
                   </Dropdown.Item>
                 ))}
               </DropdownButton>
-              <Button variant="secondary" className="ms-2" onClick={fetchAccounts}>
+
+              <Button
+                variant="secondary"
+                className="ms-3"
+                onClick={fetchAccounts}
+              >
                 Päivitä
               </Button>
-              <Button variant="primary" className="ms-2" onClick={handleConfirmAccount} disabled={!selectedAccount}>
+
+              <Button
+                variant="primary"
+                className="ms-3"
+                onClick={handleConfirmAccount}
+                disabled={!selectedAccount}
+              >
                 OK
               </Button>
             </div>
           </Form.Group>
 
-          {/* Uuden tilin luontilomake */}
           <div className="mt-4">
             <Form.Label>Luo uusi tili</Form.Label>
             <Form.Group controlId="newAccountName">
@@ -121,6 +155,8 @@ function AccountSelectionModule({ show, handleClose, userId, setSelectedAccount 
 }
 
 export default AccountSelectionModule;
+
+
 
 
 
