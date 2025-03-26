@@ -82,8 +82,17 @@ function AccountSelectionModule({ show, handleClose, userId, setSelectedAccount 
     setIsCreating(false);
   };
 
+  const handleCloseWithValidation = () => {
+    if (!selectedAccount) {
+      setErrorMessage("Sinun on valittava tili ensin. Jos sinulla ei ole vielä tiliä, luo uusi tili.");
+      setShowAlert(true);
+      return;
+    }
+    handleClose();
+  };
+
   return (
-    <Modal show={show} onHide={handleClose} centered>
+    <Modal show={show} onHide={handleCloseWithValidation} centered>
       <Modal.Header closeButton>
         <Modal.Title>Valitse tili</Modal.Title>
       </Modal.Header>
@@ -155,6 +164,7 @@ function AccountSelectionModule({ show, handleClose, userId, setSelectedAccount 
 }
 
 export default AccountSelectionModule;
+
 
 
 
