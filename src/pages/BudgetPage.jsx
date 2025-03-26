@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom"; // Käytetään Link-komponenttia siirtymiseen
-import { useBudgets } from "../actions/Budgets";
+import { useBudgets } from "../context/BudgetContext";
 import { Stack } from "react-bootstrap";
 import BudgetListItem from "../components/BudgetListItem";
 

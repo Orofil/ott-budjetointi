@@ -3,8 +3,8 @@ import { TransactionCategory } from "../constants/TransactionCategory";
 import { createTransaction, deleteTransaction, updateTransaction } from "../actions/Transactions";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Form, Button, Row, Col } from "react-bootstrap";
-import { useCategories } from "../actions/Categories";
-import { useAccounts } from "../actions/Accounts";
+import { useCategories } from "../context/CategoryContext";
+import { useAccounts } from "../context/AccountContext";
 
 function TransactionEditView({ data, onSubmit }) {
   const { expenseCategories, incomeCategories, loading: loadingCategories } = useCategories();

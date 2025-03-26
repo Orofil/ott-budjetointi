@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCategories } from '../actions/Categories';
+import { useCategories } from '../context/CategoryContext';
 import { Button, Col, Form, ListGroup, Row } from 'react-bootstrap';
 
 const CreateBudgetPage = () => {

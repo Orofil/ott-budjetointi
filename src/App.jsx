@@ -12,9 +12,9 @@ import Budgets from "./pages/BudgetPage";
 import CreateBudgetPage from "./pages/CreateBudget";
 import Settings from "./pages/Settings";
 import HeaderNav from "./components/HeaderNav";
-import { CategoryProvider } from "./actions/Categories";
-import { AccountProvider } from "./actions/Accounts";
-import { BudgetProvider } from "./actions/Budgets";
+import { CategoryProvider } from "./context/CategoryContext";
+import { AccountProvider } from "./context/AccountContext";
+import { BudgetProvider } from "./context/BudgetContext";
 import { UserProvider } from "./context/UserContext"; 
 import ProtectedRoute from "./components/ProtectedRoute";
 
