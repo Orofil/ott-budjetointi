@@ -4,7 +4,7 @@ import supabase from "../config/supabaseClient";
 
 function AccountSelectionModule({ show, handleClose, userId, setSelectedAccount }) {
   const [accounts, setAccounts] = useState([]);
-  const [selectedAccountId, setSelectedAccountId] = useState(null);
+  const [selectedAccount, setSelectedAccountState] = useState(null);
   const [newAccountName, setNewAccountName] = useState("");
   const [newAccountNumber, setNewAccountNumber] = useState("");
 
@@ -24,44 +24,33 @@ function AccountSelectionModule({ show, handleClose, userId, setSelectedAccount 
   }, [userId]);
 
   const handleSelectAccount = (accountId) => {
-    setSelectedAccountId(accountId);
+    const account = accounts.find((acc) => acc.id === Number(accountId));
+    setSelectedAccountState(account);
   };
 
   const handleConfirmAccount = () => {
-    const selectedAccount = accounts.find((account) => account.id === selectedAccountId);
     if (selectedAccount) {
-      setSelectedAccount(selectedAccount); // Aseta valittu tili
-      handleClose(); // Sulje ponnahdusikkuna
+      setSelectedAccount(selectedAccount);
+      handleClose();
     }
   };
 
   const handleCreateAccount = async () => {
-    if (!newAccountName || !newAccountNumber) {
-      return; // Varmistetaan, että kentät eivät ole tyhjiä
-    }
+    if (!newAccountName || !newAccountNumber) return;
 
     const { data, error } = await supabase
       .from("accounts")
       .insert([
-        {
-          account_name: newAccountName,
-          number: newAccountNumber,
-          user_id: userId,
-        },
-      ]);
+        { account_name: newAccountName, number: newAccountNumber, user_id: userId },
+      ])
+      .select();
 
-    if (error) {
-      console.error("Tilitietojen luominen epäonnistui", error);
-    } else {
+    if (!error && data) {
+      setAccounts([...accounts, ...data]);
       setNewAccountName("");
       setNewAccountNumber("");
-      setAccounts([...accounts, ...data]); // Lisää uusi tili tililuetteloon
     }
   };
-
-  // Hae valitun tilin nimi
-  const selectedAccount = accounts.find((account) => account.id === selectedAccountId);
-  const selectedAccountName = selectedAccount ? selectedAccount.account_name : "Valitse tili";
 
   return (
     <Modal show={show} onHide={handleClose} centered>
@@ -70,14 +59,13 @@ function AccountSelectionModule({ show, handleClose, userId, setSelectedAccount 
       </Modal.Header>
       <Modal.Body>
         <Form>
-          {/* Vetovalikko olemassa oleville tileille */}
           <Form.Group controlId="accountSelect">
             <Form.Label>Valitse tili:</Form.Label>
             <div className="d-flex align-items-center">
               <DropdownButton
                 variant="outline-secondary"
                 id="dropdown-basic-button"
-                title={selectedAccountName}
+                title={selectedAccount ? selectedAccount.account_name : "Valitse tili"}
                 onSelect={handleSelectAccount}
               >
                 {accounts.map((account) => (
@@ -90,14 +78,13 @@ function AccountSelectionModule({ show, handleClose, userId, setSelectedAccount 
                 variant="primary"
                 className="ms-3"
                 onClick={handleConfirmAccount}
-                disabled={!selectedAccountId}
+                disabled={!selectedAccount}
               >
                 OK
               </Button>
             </div>
           </Form.Group>
 
-          {/* Uuden tilin luominen */}
           <div className="mt-4">
             <Form.Label>Uusi tili</Form.Label>
             <Form.Group controlId="newAccountName">
@@ -116,11 +103,7 @@ function AccountSelectionModule({ show, handleClose, userId, setSelectedAccount 
                 onChange={(e) => setNewAccountNumber(e.target.value)}
               />
             </Form.Group>
-            <Button
-              variant="success"
-              className="mt-3"
-              onClick={handleCreateAccount}
-            >
+            <Button variant="success" className="mt-3" onClick={handleCreateAccount}>
               Luo uusi tili
             </Button>
           </div>
@@ -131,6 +114,7 @@ function AccountSelectionModule({ show, handleClose, userId, setSelectedAccount 
 }
 
 export default AccountSelectionModule;
+
 
 
 
