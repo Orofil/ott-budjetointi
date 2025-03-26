@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Dropdown, Form, Button, Modal, InputGroup } from "react-bootstrap";
-import { useAccounts } from "../actions/Accounts";
+import { useAccounts } from "../context/AccountContext";
 
 const AccountDropdown = ({ value, onChange, disabled }) => {
   const { accounts, addAccount, loading } = useAccounts();

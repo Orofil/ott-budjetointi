@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import supabase from "../config/supabaseClient";
-import { UserContext } from "../context/UserContext";
+import { UserContext } from "./UserContext";
 import React from "react";
 
 const AccountContext = createContext();

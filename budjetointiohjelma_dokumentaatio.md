@@ -38,7 +38,7 @@ Sivuston HTML-sisältö ```index.html``` kutsuu
 
 Sovelluksen suoritus aloitetaan ```src/main.jsx```-tiedostosta, joka luo sovelluksen rakenteen sisältävän App-komponentin tiedostosta ```src/App.jsx```. App.jsx tarkistaa käyttäjän kirjautumisen tilan ja palauttaa ```BrowserRouter```in sovelluksen eri sivujen välistä navigaatiota varten. Se sisältää myös ```HeaderNav```-elementin eli sovelluksen otsikko- ja navigaatiopalkin.
 
-```src/actions``` sisältää sovelluksen yhteydet tietokantaan, eli funktiot, joiden avulla sovellus voi lukea tietoa tietokannasta ja tallentaa uutta tietoa sinne.
+```src/actions``` sisältää erilaisia toimintoja. Monet sovelluksen toiminnoista on kirjoitettu osaksi komponentteja tai sivuja, mutta osa on erikseen täällä kansiossa.
 
 ```src/assets``` sisältää sovelluksessa käytettävät grafiikat.
 
@@ -48,6 +48,8 @@ Sovelluksen suoritus aloitetaan ```src/main.jsx```-tiedostosta, joka luo sovellu
 
 ```src/constants``` sisältää vakioarvoja, kuten tilitapahtumien erottelun kulujen ja tulojen välillä.
 
+```src/context``` sisältää "konteksteja"; tiedostoja, jotka kommunikoivat tietokannan kanssa ja säilövät tietokantaobjekteja sovelluksen käyttöön.
+
 ```src/pages``` sisältää sovelluksen eri sivut, joiden välillä käyttäjä voi navigoida App.jsx-tiedostossa määritellyn ```BrowserRouter```in avulla.
 
 #### Toiminnot (actions)
@@ -55,6 +57,10 @@ Sovelluksen suoritus aloitetaan ```src/main.jsx```-tiedostosta, joka luo sovellu
 
 
 #### Komponentit (components)
+
+
+
+#### Kontekstit (context)
 
 
 

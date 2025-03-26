@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import supabase from "../config/supabaseClient";
 import { TransactionCategory } from "../constants/TransactionCategory";
-import { UserContext } from "../context/UserContext";
+import { UserContext } from "./UserContext";
 
 const CategoryContext = createContext();
 
