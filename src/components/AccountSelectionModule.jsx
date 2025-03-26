@@ -7,21 +7,22 @@ function AccountSelectionModule({ show, handleClose, userId, setSelectedAccount 
   const [selectedAccount, setSelectedAccountState] = useState(null);
   const [newAccountName, setNewAccountName] = useState("");
   const [newAccountNumber, setNewAccountNumber] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
-    const fetchAccounts = async () => {
-      const { data, error } = await supabase
-        .from("accounts")
-        .select("*")
-        .eq("user_id", userId);
-
-      if (data) {
-        setAccounts(data);
-      }
-    };
-
     fetchAccounts();
   }, [userId]);
+
+  const fetchAccounts = async () => {
+    const { data, error } = await supabase
+      .from("accounts")
+      .select("*")
+      .eq("user_id", userId);
+
+    if (data) {
+      setAccounts(data);
+    }
+  };
 
   const handleSelectAccount = (accountId) => {
     const account = accounts.find((acc) => acc.id === Number(accountId));
@@ -36,20 +37,27 @@ function AccountSelectionModule({ show, handleClose, userId, setSelectedAccount 
   };
 
   const handleCreateAccount = async () => {
-    if (!newAccountName || !newAccountNumber) return;
+    if (!newAccountName.trim() || !newAccountNumber.trim()) return;
+    if (isCreating) return;
+    setIsCreating(true);
 
     const { data, error } = await supabase
       .from("accounts")
       .insert([
-        { account_name: newAccountName, number: newAccountNumber, user_id: userId },
+        { 
+          account_name: newAccountName.trim(), 
+          account_number: newAccountNumber.trim(), // Korjattu kentän nimi
+          user_id: userId 
+        },
       ])
       .select();
 
-    if (!error && data) {
-      setAccounts([...accounts, ...data]);
+    if (!error && data?.length > 0) {
+      setAccounts([...accounts, data[0]]);
       setNewAccountName("");
       setNewAccountNumber("");
     }
+    setIsCreating(false);
   };
 
   return (
@@ -74,23 +82,22 @@ function AccountSelectionModule({ show, handleClose, userId, setSelectedAccount 
                   </Dropdown.Item>
                 ))}
               </DropdownButton>
-              <Button
-                variant="primary"
-                className="ms-3"
-                onClick={handleConfirmAccount}
-                disabled={!selectedAccount}
-              >
+              <Button variant="secondary" className="ms-2" onClick={fetchAccounts}>
+                Päivitä
+              </Button>
+              <Button variant="primary" className="ms-2" onClick={handleConfirmAccount} disabled={!selectedAccount}>
                 OK
               </Button>
             </div>
           </Form.Group>
 
+          {/* Uuden tilin luontilomake */}
           <div className="mt-4">
-            <Form.Label>Uusi tili</Form.Label>
+            <Form.Label>Luo uusi tili</Form.Label>
             <Form.Group controlId="newAccountName">
               <Form.Control
                 type="text"
-                placeholder="Tili nimi"
+                placeholder="Tilin nimi"
                 value={newAccountName}
                 onChange={(e) => setNewAccountName(e.target.value)}
               />
@@ -98,13 +105,13 @@ function AccountSelectionModule({ show, handleClose, userId, setSelectedAccount 
             <Form.Group controlId="newAccountNumber" className="mt-2">
               <Form.Control
                 type="text"
-                placeholder="Tili numero"
+                placeholder="Tilinumero"
                 value={newAccountNumber}
                 onChange={(e) => setNewAccountNumber(e.target.value)}
               />
             </Form.Group>
-            <Button variant="success" className="mt-3" onClick={handleCreateAccount}>
-              Luo uusi tili
+            <Button variant="success" className="mt-3 w-100" onClick={handleCreateAccount} disabled={isCreating}>
+              {isCreating ? "Luodaan..." : "Luo uusi tili"}
             </Button>
           </div>
         </Form>
@@ -114,6 +121,8 @@ function AccountSelectionModule({ show, handleClose, userId, setSelectedAccount 
 }
 
 export default AccountSelectionModule;
+
+
 
 
 
