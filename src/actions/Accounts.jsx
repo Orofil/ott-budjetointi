@@ -1,16 +1,17 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import supabase from "../config/supabaseClient";
+import { UserContext } from "../context/UserContext";
+import React from "react";
 
 const AccountContext = createContext();
 
 export const AccountProvider = ({ children }) => {
+  const { user } = useContext(UserContext); // Haetaan kirjautuneen käyttäjän tiedot
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadAccounts = async () => {
-      // Haetaan kirjautuneen käyttäjän tiedot
-      const { data: { user } } = await supabase.auth.getUser();
       const { data, error } = await supabase
         .from("accounts")
         .select()
@@ -25,9 +26,6 @@ export const AccountProvider = ({ children }) => {
   // Uuden tilin lisäys
   const addAccount = async (account) => {
     setLoading(true);
-    // Haetaan kirjautuneen käyttäjän tiedot
-    const { data: { user } } = await supabase.auth.getUser();
-
     const { data, error } = await supabase.rpc("add_account", {
       p_user_id: user.id,
       p_account_number: account.account_number,
