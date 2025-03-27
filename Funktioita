@@ -196,3 +196,152 @@ BEGIN
     RETURN new_id;
 END;
 $$ LANGUAGE plpgsql;
+
+
+
+
+/* Budjettien tapahtumien lisääminen */
+
+-- Tapahtumien lisäys
+CREATE OR REPLACE FUNCTION add_budget_expense_transaction()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Lisätään ne tilitapahtumat jotka kuuluvat budjetin tileihin ja kategorioihin
+    INSERT INTO budgets_expense_transactions (budget_id, expense_transaction_id)
+    SELECT b.id, NEW.id
+    FROM budgets b
+    JOIN budgets_accounts ba ON ba.budget_id = b.id
+    JOIN budgets_categories bc ON bc.budget_id = b.id
+    WHERE ba.account_id = NEW.account_from
+      AND bc.budget_category_id = NEW.category_id;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION add_budget_income_transaction()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO budgets_income_transactions (budget_id, income_transaction_id)
+    SELECT b.id, NEW.id
+    FROM budgets b
+    JOIN budgets_accounts ba ON ba.budget_id = b.id
+    JOIN budgets_categories bc ON bc.budget_id = b.id
+    WHERE ba.account_id = NEW.account_to
+      AND bc.budget_category_id = NEW.category_id;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- Budjettien muokkaus
+CREATE OR REPLACE FUNCTION populate_budget_transactions(p_budget_id INT)
+RETURNS VOID AS $$
+BEGIN
+    INSERT INTO budgets_expense_transactions (budget_id, expense_transaction_id)
+    SELECT b.id, et.id
+    FROM expense_transactions et
+    JOIN budgets_accounts ba ON ba.account_id = et.account_from
+    JOIN budgets_categories bc ON bc.budget_category_id = et.category_id
+    JOIN budgets b ON b.id = ba.budget_id AND b.id = bc.budget_id
+    WHERE b.id = p_budget_id
+    ON CONFLICT DO NOTHING; -- Ei kaksoiskappaleita
+
+    INSERT INTO budgets_income_transactions (budget_id, income_transaction_id)
+    SELECT b.id, it.id
+    FROM income_transactions it
+    JOIN budgets_accounts ba ON ba.account_id = it.account_to
+    JOIN budgets_categories bc ON bc.budget_category_id = it.category_id
+    JOIN budgets b ON b.id = ba.budget_id AND b.id = bc.budget_id
+    WHERE b.id = p_budget_id
+    ON CONFLICT DO NOTHING;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- Tapahtumien muokkaus
+CREATE OR REPLACE FUNCTION update_budget_expense_transaction()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Poista vanhoista budjeteista
+    DELETE FROM budgets_expense_transactions bet
+    WHERE bet.expense_transaction_id = OLD.id
+      AND NOT EXISTS (
+          SELECT 1 FROM budgets b
+          JOIN budgets_accounts ba ON ba.budget_id = b.id
+          JOIN budgets_categories bc ON bc.budget_id = b.id
+          WHERE ba.account_id = NEW.account_from
+            AND bc.budget_category_id = NEW.category_id
+            AND b.id = bet.budget_id
+      );
+
+    -- Lisää uusiin budjetteihin
+    INSERT INTO budgets_expense_transactions (budget_id, expense_transaction_id)
+    SELECT b.id, NEW.id
+    FROM budgets b
+    JOIN budgets_accounts ba ON ba.budget_id = b.id
+    JOIN budgets_categories bc ON bc.budget_id = b.id
+    WHERE ba.account_id = NEW.account_from
+      AND bc.budget_category_id = NEW.category_id
+    ON CONFLICT DO NOTHING;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION update_budget_income_transaction()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Poista edellisistä budjeteista
+    DELETE FROM budgets_income_transactions bit
+    WHERE bit.income_transaction_id = OLD.id
+      AND NOT EXISTS (
+          SELECT 1 FROM budgets b
+          JOIN budgets_accounts ba ON ba.budget_id = b.id
+          JOIN budgets_categories bc ON bc.budget_id = b.id
+          WHERE ba.account_id = NEW.account_to
+            AND bc.budget_category_id = NEW.category_id
+            AND b.id = bit.budget_id
+      );
+
+    -- Lisää uusiin budjetteihin
+    INSERT INTO budgets_income_transactions (budget_id, income_transaction_id)
+    SELECT b.id, NEW.id
+    FROM budgets b
+    JOIN budgets_accounts ba ON ba.budget_id = b.id
+    JOIN budgets_categories bc ON bc.budget_id = b.id
+    WHERE ba.account_id = NEW.account_to
+      AND bc.budget_category_id = NEW.category_id
+    ON CONFLICT DO NOTHING;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+----- Triggerit
+
+-- Tapahtumien luomiset
+CREATE TRIGGER budget_expense_transaction_trigger
+AFTER INSERT ON expense_transactions
+FOR EACH ROW
+EXECUTE FUNCTION add_budget_expense_transaction();
+
+CREATE TRIGGER budget_income_transaction_trigger
+AFTER INSERT ON income_transactions
+FOR EACH ROW
+EXECUTE FUNCTION add_budget_income_transaction();
+
+
+-- Tapahtumien muokkaukset
+CREATE TRIGGER expense_transaction_update_trigger
+AFTER UPDATE ON expense_transactions
+FOR EACH ROW
+EXECUTE FUNCTION update_budget_expense_transaction();
+
+CREATE TRIGGER income_transaction_update_trigger
+AFTER UPDATE ON income_transactions
+FOR EACH ROW
+EXECUTE FUNCTION update_budget_income_transaction();

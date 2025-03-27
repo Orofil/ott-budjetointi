@@ -68,6 +68,14 @@ export const BudgetProvider = ({ children }) => {
       return;
     }
 
+    // Haetaan budjettiin kuuluvat tapahtumat
+    const { error: error4 } = await supabase.rpc("populate_budget_transactions", { p_budget_id: id });
+    if (error4) {
+      console.error("Virhe budjetin tapahtumien lisäämisessä:", error);
+      setLoading(false);
+      return;
+    }
+
     setBudgets((prev) => [...prev, budget]);
     setLoading(false);
     console.log("Lisätty budjetti:", id);
