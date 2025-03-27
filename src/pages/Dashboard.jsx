@@ -83,18 +83,7 @@ function Dashboard() {
         setSelectedAccount={setSelectedAccount}
       />
 
-      {/* Ylin kortti, jossa näytetään valittu tili */}
-      <Row className="justify-content-center">
-        <Col md={12}>
-          <Card className="shadow p-4">
-            <Card.Body>
-              <h4 className="text-center">
-                {selectedAccount ? `Valittu tili: ${selectedAccount.account_name}` : "Ei valittua tiliä"}
-              </h4>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+  
 
       {/* Muu sisältö Dashboardissa */}
       <Row className="justify-content-center">
