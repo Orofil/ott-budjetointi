@@ -67,6 +67,7 @@ SELECT add_transaction(
 
 
 /* Tapahtuman muokkaaminen */
+
 CREATE OR REPLACE FUNCTION update_transaction(
     p_id INTEGER,
     p_date DATE,
@@ -107,6 +108,33 @@ BEGIN
 
     -- Palautetaan tapahtuman ID
     RETURN transaction_id;
+END;
+$$ LANGUAGE plpgsql;
+
+
+/* Uuden budjetin lisääminen */
+
+CREATE OR REPLACE FUNCTION add_budget(
+    p_user_id UUID,
+    p_start_date DATE,
+    p_end_date DATE,
+    p_budget_name TEXT,
+    p_amount NUMERIC
+) RETURNS INTEGER AS $$
+DECLARE
+    new_budget_id INTEGER;
+BEGIN
+    -- Lisätään budjetti
+    INSERT INTO public.budgets (
+        user_id, start_date, end_date, budget_name, amount
+    )
+    VALUES (
+        p_user_id, p_start_date, p_end_date, p_budget_name, p_amount
+    )
+    RETURNING id INTO new_budget_id;
+
+    -- Palautetaan uuden budjetin ID
+    RETURN new_budget_id;
 END;
 $$ LANGUAGE plpgsql;
 
