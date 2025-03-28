@@ -1,12 +1,12 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Button, Container, Row, Col } from "react-bootstrap";
 import { ArrowsAngleExpand } from "react-bootstrap-icons";
-import { useCategories } from "../context/CategoryContext";
-import { useAccounts } from "../context/AccountContext";
+import { CategoryContext } from "../context/CategoryContext";
+import { AccountContext } from "../context/AccountContext";
 
 const TransactionListItem = ({ transaction, onClick }) => {
-  const { expenseCategories, incomeCategories, loading } = useCategories();
-  const { accounts } = useAccounts();
+  const { expenseCategories, incomeCategories, loading } = useContext(CategoryContext);
+  const { accounts } = useContext(AccountContext);
 
   return (
     <Button

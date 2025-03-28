@@ -1,14 +1,14 @@
-import React, { useActionState, useEffect, useState } from "react";
+import React, { useActionState, useContext, useEffect, useState } from "react";
 import { TransactionCategory } from "../constants/TransactionCategory";
 import { createTransaction, deleteTransaction, updateTransaction } from "../actions/Transactions";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Form, Button, Row, Col } from "react-bootstrap";
-import { useCategories } from "../context/CategoryContext";
-import { useAccounts } from "../context/AccountContext";
+import { CategoryContext } from "../context/CategoryContext";
+import { AccountContext } from "../context/AccountContext";
 
 function TransactionEditView({ data, onSubmit }) {
-  const { expenseCategories, incomeCategories, loading: loadingCategories } = useCategories();
-  const { accounts, loading: loadingAccounts } = useAccounts();
+  const { expenseCategories, incomeCategories, loading: loadingCategories } = useContext(CategoryContext);
+  const { accounts, loading: loadingAccounts } = useContext(AccountContext);
   
   const [type, setType] = useState(TransactionCategory.EXPENSE);
   const [values, setValues] = useState({

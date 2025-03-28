@@ -3,7 +3,7 @@ import supabase from "../config/supabaseClient";
 import { TransactionCategory } from "../constants/TransactionCategory";
 import { UserContext } from "./UserContext";
 
-const CategoryContext = createContext();
+export const CategoryContext = createContext();
 
 export const CategoryProvider = ({ children }) => {
   const { user } = useContext(UserContext); // Haetaan kirjautuneen käyttäjän tiedot
@@ -52,5 +52,3 @@ export const CategoryProvider = ({ children }) => {
     </CategoryContext.Provider>
   );
 };
-
-export const useCategories = () => useContext(CategoryContext);

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import supabase from "../config/supabaseClient";
 import { UserContext } from "../context/UserContext";
-import { Container, Row, Col, Card } from "react-bootstrap";
+import { Container, Row, Col, Card, Button } from "react-bootstrap";
 import TransactionList from "../components/TransactionList";
 import AccountSelectionModule from "../components/AccountSelectionModule";
 import {
@@ -120,7 +120,14 @@ function Dashboard() {
         <Col md={12}>
           <Card className="shadow p-4">
             <Card.Body>
-              <h4 className="text-center">Viimeisimmät tapahtumat</h4>
+            <Container className="py-3 d-flex align-items-center justify-content-center">
+              {/* Tällä otsikko keskelle */}
+              <div className="me-5" style={{ width:"15rem" }}></div>
+              <h4 className="m-0">Lisätyt tapahtumat</h4>
+              <Button href="/transaction-import" variant="primary" className="ms-5" style={{ width:"15rem" }}>
+                Tuo uusia pankkitapahtumia
+              </Button>
+            </Container>
               <TransactionList />
             </Card.Body>
           </Card>

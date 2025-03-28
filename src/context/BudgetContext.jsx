@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import supabase from "../config/supabaseClient";
 import { UserContext } from "./UserContext";
 
-const BudgetContext = createContext();
+export const BudgetContext = createContext();
 
 export const BudgetProvider = ({ children }) => {
   const { user } = useContext(UserContext); // Haetaan kirjautuneen käyttäjän tiedot
@@ -88,5 +88,3 @@ export const BudgetProvider = ({ children }) => {
     </BudgetContext.Provider>
   );
 };
-
-export const useBudgets = () => useContext(BudgetContext);

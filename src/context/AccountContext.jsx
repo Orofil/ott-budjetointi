@@ -3,7 +3,7 @@ import supabase from "../config/supabaseClient";
 import { UserContext } from "./UserContext";
 import React from "react";
 
-const AccountContext = createContext();
+export const AccountContext = createContext();
 
 export const AccountProvider = ({ children }) => {
   const { user } = useContext(UserContext); // Haetaan kirjautuneen käyttäjän tiedot
@@ -48,5 +48,3 @@ export const AccountProvider = ({ children }) => {
     </AccountContext.Provider>
   );
 };
-
-export const useAccounts = () => useContext(AccountContext);

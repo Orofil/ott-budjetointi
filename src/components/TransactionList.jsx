@@ -59,7 +59,7 @@ export default function TransactionList() {
       </Stack>
 
       {!transactions.length && (
-        <p className="fst-italic text-center">Ei tilitapahtumia</p>
+        <p className="fst-italic text-center">Ei pankkitapahtumia</p>
       )}
 
       {hasMore && (
@@ -75,7 +75,7 @@ export default function TransactionList() {
 
       <Modal size="lg" show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Muokkaa tilitapahtumaa</Modal.Title>
+          <Modal.Title>Muokkaa pankkitapahtumaa</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <TransactionEditView data={selectedData} onSubmit={success => {

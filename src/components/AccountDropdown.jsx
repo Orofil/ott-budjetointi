@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Dropdown, Form, Button, Modal, InputGroup } from "react-bootstrap";
-import { useAccounts } from "../context/AccountContext";
+import { AccountContext } from "../context/AccountContext";
 
 const AccountDropdown = ({ value, onChange, disabled }) => {
-  const { accounts, addAccount, loading } = useAccounts();
+  const { accounts, addAccount, loading } = useContext(AccountContext);
   const [showModal, setShowModal] = useState(false);
   const [accountNumber, setAccountNumber] = useState(value);
   const [accountName, setAccountName] = useState("");

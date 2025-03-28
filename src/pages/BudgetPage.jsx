@@ -1,12 +1,12 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Link } from "react-router-dom"; // Käytetään Link-komponenttia siirtymiseen
-import { useBudgets } from "../context/BudgetContext";
+import { BudgetContext } from "../context/BudgetContext";
 import { Stack } from "react-bootstrap";
 import BudgetListItem from "../components/BudgetListItem";
 
 // Tämä komponentti hakee ja näyttää kaikki budjetit tietokannasta.
 const BudgetListPage = () => {
-  const { budgets, loading } = useBudgets();
+  const { budgets, loading } = useContext(BudgetContext);
 
   return (
     <div className="budget-list-page">

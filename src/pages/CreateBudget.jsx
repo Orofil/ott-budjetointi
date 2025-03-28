@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCategories } from '../context/CategoryContext';
+import { CategoryContext } from '../context/CategoryContext';
 import { Button, Col, Form, ListGroup, Row } from 'react-bootstrap';
-import { useBudgets } from '../context/BudgetContext';
-import { useAccounts } from '../context/AccountContext';
+import { BudgetContext } from '../context/BudgetContext';
+import { AccountContext } from '../context/AccountContext';
 
 const CreateBudgetPage = () => {
-  const { expenseCategories, incomeCategories } = useCategories(); // Kategoriat
-  const { accounts } = useAccounts();
-  const { addBudget } = useBudgets();
+  const { expenseCategories, incomeCategories } = useContext(CategoryContext);
+  const { accounts } = useContext(AccountContext);
+  const { addBudget } = useContext(BudgetContext);
   const [budgetName, setBudgetName] = useState('');
   const [budgetAmount, setBudgetAmount] = useState('');
   const [startDate, setStartDate] = useState('');

@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Papa from "papaparse";
-import { useCategories } from "../context/CategoryContext";
+import { CategoryContext } from "../context/CategoryContext";
 import { Button } from "react-bootstrap";
-import { useAccounts } from "../context/AccountContext";
+import { AccountContext } from "../context/AccountContext";
 import AccountDropdown from "./AccountDropdown";
 import { createTransactions, getTransaction } from "../actions/Transactions";
 import parseCSV from "../actions/CSVParse";
 
 const TransactionFileImport = () => {
-  const { expenseCategories, incomeCategories, loading: loadingCategories } = useCategories();
-  const { accounts } = useAccounts();
+  const { expenseCategories, incomeCategories, loading: loadingCategories } = useContext(CategoryContext);
+  const { accounts } = useContext(AccountContext);
 
   const [tableData, setTableData] = useState([]);
   const [savedRows, setSavedRows] = useState([]); // Mitkä riveistä tallennetaan
