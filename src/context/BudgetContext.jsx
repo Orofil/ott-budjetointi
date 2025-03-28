@@ -29,10 +29,11 @@ export const BudgetProvider = ({ children }) => {
     setLoading(true);
     const { data: id , error } = await supabase.rpc("add_budget", {
       p_user_id: user.id,
-      p_start_date: budget.start_date,
-      p_end_date: budget.end_date,
+      p_start_date: budget.start_date || null,
+      p_end_date: budget.end_date || null,
       p_budget_name: budget.budget_name,
-      p_amount: budget.amount
+      p_amount: budget.amount,
+      p_repeating: budget.repeating
     });
     if (error) {
       console.error("Virhe budjetin lisäämisessä:", error);

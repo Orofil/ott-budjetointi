@@ -112,33 +112,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-/* Uuden budjetin lisääminen */
-
-CREATE OR REPLACE FUNCTION add_budget(
-    p_user_id UUID,
-    p_start_date DATE,
-    p_end_date DATE,
-    p_budget_name TEXT,
-    p_amount NUMERIC
-) RETURNS INTEGER AS $$
-DECLARE
-    new_budget_id INTEGER;
-BEGIN
-    -- Lisätään budjetti
-    INSERT INTO public.budgets (
-        user_id, start_date, end_date, budget_name, amount
-    )
-    VALUES (
-        p_user_id, p_start_date, p_end_date, p_budget_name, p_amount
-    )
-    RETURNING id INTO new_budget_id;
-
-    -- Palautetaan uuden budjetin ID
-    RETURN new_budget_id;
-END;
-$$ LANGUAGE plpgsql;
-
-
 /* Uuden kategorian lisääminen*/
 
 CREATE OR REPLACE FUNCTION add_user_category(
@@ -198,6 +171,38 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+/* Uuden budjetin lisääminen */
+
+CREATE OR REPLACE FUNCTION add_budget(
+    p_user_id UUID,
+    p_start_date DATE,
+    p_end_date DATE,
+    p_budget_name TEXT,
+    p_amount NUMERIC,
+    p_repeating TEXT
+) RETURNS INTEGER AS $$
+DECLARE
+    new_budget_id INTEGER;
+BEGIN
+    -- Budjetilla on oltava joko alku- ja loppupäivät tai toistoaika
+    IF p_repeating IS NULL AND (p_start_date IS NULL OR p_end_date IS NULL)
+    THEN
+        RETURN NULL;
+    END IF;
+    
+    -- Lisätään budjetti
+    INSERT INTO public.budgets (
+        user_id, start_date, end_date, budget_name, amount, repeating
+    )
+    VALUES (
+        p_user_id, p_start_date, p_end_date, p_budget_name, p_amount, p_repeating
+    )
+    RETURNING id INTO new_budget_id;
+
+    -- Palautetaan uuden budjetin ID
+    RETURN new_budget_id;
+END;
+$$ LANGUAGE plpgsql;
 
 
 /* Budjettien tapahtumien lisääminen */
@@ -213,7 +218,8 @@ BEGIN
     JOIN budgets_accounts ba ON ba.budget_id = b.id
     JOIN budgets_categories bc ON bc.budget_id = b.id
     WHERE ba.account_id = NEW.account_from
-      AND bc.budget_category_id = NEW.category_id;
+      AND bc.budget_category_id = NEW.category_id
+      AND (b.repeating IS NOT NULL OR NEW.date BETWEEN b.start_date AND b.end_date);
     
     RETURN NEW;
 END;
@@ -228,7 +234,8 @@ BEGIN
     JOIN budgets_accounts ba ON ba.budget_id = b.id
     JOIN budgets_categories bc ON bc.budget_id = b.id
     WHERE ba.account_id = NEW.account_to
-      AND bc.budget_category_id = NEW.category_id;
+      AND bc.budget_category_id = NEW.category_id
+      AND (b.repeating IS NOT NULL OR NEW.date BETWEEN b.start_date AND b.end_date);
     
     RETURN NEW;
 END;
@@ -246,6 +253,7 @@ BEGIN
     JOIN budgets_categories bc ON bc.budget_category_id = et.category_id
     JOIN budgets b ON b.id = ba.budget_id AND b.id = bc.budget_id
     WHERE b.id = p_budget_id
+      AND (b.repeating IS NOT NULL OR et.date BETWEEN b.start_date AND b.end_date)
     ON CONFLICT DO NOTHING; -- Ei kaksoiskappaleita
 
     INSERT INTO budgets_income_transactions (budget_id, income_transaction_id)
@@ -255,6 +263,7 @@ BEGIN
     JOIN budgets_categories bc ON bc.budget_category_id = it.category_id
     JOIN budgets b ON b.id = ba.budget_id AND b.id = bc.budget_id
     WHERE b.id = p_budget_id
+      AND (b.repeating IS NOT NULL OR it.date BETWEEN b.start_date AND b.end_date)
     ON CONFLICT DO NOTHING;
 END;
 $$ LANGUAGE plpgsql;
@@ -273,6 +282,7 @@ BEGIN
           JOIN budgets_categories bc ON bc.budget_id = b.id
           WHERE ba.account_id = NEW.account_from
             AND bc.budget_category_id = NEW.category_id
+            (b.repeating IS NOT NULL OR NEW.date BETWEEN b.start_date AND b.end_date)
             AND b.id = bet.budget_id
       );
 
@@ -284,6 +294,7 @@ BEGIN
     JOIN budgets_categories bc ON bc.budget_id = b.id
     WHERE ba.account_id = NEW.account_from
       AND bc.budget_category_id = NEW.category_id
+      (b.repeating IS NOT NULL OR NEW.date BETWEEN b.start_date AND b.end_date)
     ON CONFLICT DO NOTHING;
 
     RETURN NEW;
@@ -302,6 +313,7 @@ BEGIN
           JOIN budgets_categories bc ON bc.budget_id = b.id
           WHERE ba.account_id = NEW.account_to
             AND bc.budget_category_id = NEW.category_id
+            (b.repeating IS NOT NULL OR NEW.date BETWEEN b.start_date AND b.end_date)
             AND b.id = bit.budget_id
       );
 
@@ -313,6 +325,7 @@ BEGIN
     JOIN budgets_categories bc ON bc.budget_id = b.id
     WHERE ba.account_id = NEW.account_to
       AND bc.budget_category_id = NEW.category_id
+      (b.repeating IS NOT NULL OR NEW.date BETWEEN b.start_date AND b.end_date)
     ON CONFLICT DO NOTHING;
 
     RETURN NEW;

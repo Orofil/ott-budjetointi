@@ -1,5 +1,6 @@
 import { Button, Col, Container, Row } from "react-bootstrap";
 import { ChevronRight } from "react-bootstrap-icons";
+import { findBudgetRepeating } from "../constants/BudgetRepeating";
 
 const BudgetListItem = ({ budget }) => {
   return (
@@ -18,7 +19,10 @@ const BudgetListItem = ({ budget }) => {
           </Col>
 
           <Col xs="3" className="text-muted">
-            {budget.start_date} &ndash; {budget.end_date}
+            {budget.repeating ?
+              findBudgetRepeating(budget.repeating).text :
+              `${budget.start_date} – ${budget.end_date}`
+            }
           </Col>
 
           <Col xs="1">

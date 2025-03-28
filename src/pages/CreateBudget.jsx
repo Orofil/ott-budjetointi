@@ -1,9 +1,10 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CategoryContext } from '../context/CategoryContext';
 import { Button, Col, Form, ListGroup, Row } from 'react-bootstrap';
 import { BudgetContext } from '../context/BudgetContext';
 import { AccountContext } from '../context/AccountContext';
+import { BudgetRepeating } from '../constants/BudgetRepeating';
 
 const CreateBudgetPage = () => {
   const { expenseCategories, incomeCategories } = useContext(CategoryContext);
@@ -11,8 +12,10 @@ const CreateBudgetPage = () => {
   const { addBudget } = useContext(BudgetContext);
   const [budgetName, setBudgetName] = useState('');
   const [budgetAmount, setBudgetAmount] = useState('');
+  const [repeatOrNot, setRepeatOrNot] = useState(false); // Ollaanko budjetista tekemässä toistuva vai ei
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [repeating, setRepeating] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedAccounts, setSelectedAccounts] = useState([]);
   const [message, setMessage] = useState("");
@@ -31,11 +34,13 @@ const CreateBudgetPage = () => {
       return;
     }
 
+    // Luodaan budjetti
     let id = await addBudget({
       start_date: startDate,
       end_date: endDate,
       budget_name: budgetName,
       amount: budgetAmount,
+      repeating: repeating,
       categories: selectedCategories,
       accounts: selectedAccounts
     });
@@ -50,6 +55,15 @@ const CreateBudgetPage = () => {
   const handleCancel = () => {
     navigate('/budgets'); // Jos käyttäjä peruuttaa, ohjataan takaisin Budgets-sivulle
   };
+
+  useEffect(() => {
+    if (repeatOrNot) {
+      setStartDate("");
+      setEndDate("");
+    } else {
+      setRepeating("");
+    }
+  }, [repeatOrNot]);
 
   const toggleCategory = (item) => {
     setSelectedCategories((prev) =>
@@ -71,7 +85,7 @@ const CreateBudgetPage = () => {
   return (
     <div className="create-budget-page">
       <h1>Lisää uusi budjetti</h1>
-      <form onSubmit={handleSubmit}>
+      <Form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="budget-name">Budjetin nimi:</label>
           <input
@@ -91,30 +105,60 @@ const CreateBudgetPage = () => {
             step="0.01"
             value={budgetAmount}
             onChange={(e) => setBudgetAmount(e.target.value)}
-          />
-        </div>
-        <div>
-          <label htmlFor="start-date">Aloituspäivämäärä:</label>
-          <input
-            id="start-date"
-            type="date"
-            max={endDate}
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
             required
           />
         </div>
-        <div>
-          <label htmlFor="end-date">Lopetuspäivämäärä:</label>
-          <input
-            id="end-date"
-            type="date"
-            min={startDate}
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            required
-          />
-        </div>
+        <Form.Check
+          type="switch"
+          label="Toistuva budjetti"
+          value={repeatOrNot}
+          onChange={(e) => setRepeatOrNot(e.target.checked)}
+        />
+        {!repeatOrNot && (
+          <>
+            <div>
+              <label htmlFor="start-date">Aloituspäivämäärä:</label>
+              <input
+                id="start-date"
+                type="date"
+                max={endDate}
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="end-date">Lopetuspäivämäärä:</label>
+              <input
+                id="end-date"
+                type="date"
+                min={startDate}
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                required
+              />
+            </div>
+          </>
+        )}
+        {repeatOrNot && (
+          <div>
+            <label htmlFor="repeating">Budjetin toistumisväli:</label>
+            <select
+              id="repeating"
+              value={repeating}
+              onChange={(e) => setRepeating(e.target.value)}
+              required
+            >
+              <option value="" disabled hidden></option>
+              {Object.values(BudgetRepeating).map((r) => (
+                <option key={r.value} value={r.value}>
+                  {r.text}
+                </option>
+              ))};
+            </select>
+          </div>
+        )}
+        
         <div style={{ maxWidth: "30rem" }}>
           <label htmlFor="category">Valitse seurattavat kategoriat:</label>
           <Button variant="secondary" onClick={toggleAllCategories} className="w-100 mb-3">
@@ -181,7 +225,7 @@ const CreateBudgetPage = () => {
 
         <button type="submit">Luo budjetti</button>
         <button type="button" onClick={handleCancel}>Peruuta</button>
-      </form>
+      </Form>
     </div>
   );
 };

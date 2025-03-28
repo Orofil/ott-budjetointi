@@ -6,4 +6,4 @@ export const TransactionCategory = Object.freeze({
 
 export const findTransactionCategory = (id) => {
   return Object.values(TransactionCategory).find(obj => obj.id === id);
-}
+};
