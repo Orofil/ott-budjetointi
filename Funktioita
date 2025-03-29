@@ -358,3 +358,43 @@ CREATE TRIGGER income_transaction_update_trigger
 AFTER UPDATE ON income_transactions
 FOR EACH ROW
 EXECUTE FUNCTION update_budget_income_transaction();
+
+
+/* Budjetin tapahtumien haku */
+
+CREATE OR REPLACE FUNCTION get_budget_transactions(
+  p_budget_id INT,
+  p_start_date DATE,
+  p_end_date DATE
+)
+RETURNS TABLE (
+  id BIGINT,
+  type INTEGER,
+  date DATE,
+  reference_number NUMERIC,
+  description TEXT,
+  amount NUMERIC,
+  other_account TEXT,
+  own_account BIGINT,
+  category_id BIGINT,
+  user_id UUID
+) AS $$
+BEGIN
+    RETURN query
+    SELECT * FROM all_transactions AS t
+    WHERE ((t.type = 0 AND t.id IN ( -- Haetaan budjetin tapahtumat
+      SELECT e.expense_transaction_id FROM budgets_expense_transactions AS e
+      WHERE e.budget_id = p_budget_id
+    )) OR (t.type = 1 AND t.id IN (
+      SELECT i.income_transaction_id FROM budgets_income_transactions AS i
+      WHERE i.budget_id = p_budget_id
+    ))) AND ( -- Rajataan päivämäärät jos ne on annettu
+      (p_start_date IS NULL OR p_end_date IS NULL) OR
+      (t.date BETWEEN p_start_date AND p_end_date)
+    );
+END;
+$$ LANGUAGE plpgsql;
+
+-- Esimerkki
+SELECT get_budget_transactions(14, '2025-01-01', '2025-03-01');
+SELECT get_budget_transactions(15, '2025-03-01', '2025-03-07');
