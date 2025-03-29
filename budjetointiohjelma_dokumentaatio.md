@@ -74,110 +74,197 @@ Tietokantapalveluna toimii Supabase, joka käyttää PostgreSQL-tietokantaa.
 
 #### Taulut
 
-- accounts
-  - **id**
-    - int8
-  - user_id
-    - Viiteavain auth.users-tauluun
-    - uuid
-  - account_number
-    - text
-  - account_name
-    - text
-  - created_at
-    - timestamp
-- budgets
-  - **id**
-    - int8
-  - user_id
-    - Viiteavain auth.users-tauluun
-    - uuid
-  - start_date
-    - date
-  - end_date
-    - date
-  - created_at
-    - timestamp
-  - budget_name
-    - text
-  - amount
-    - numeric
-- budgets_accounts
-  - **account_id**
-    - Viiteavain accounts-tauluun
-    - int8
-  - **budget_id**
-    - Viiteavain budgets-tauluun
-    - int8
-- budgets_categories
-  - **budget_id**
-    - Viiteavain budgets-tauluun
-    - int8
-  - **budget_category_id**
-    - Viiteavain categories-tauluun
-    - int8
-  - amount
-    - float8
-- budgets_income_transactions
-  - **income_transaction_id**
-    - Viiteavain income_transactions-tauluun
-    - int8
-  - **budget_id**
-    - Viiteavain budgets-tauluun
-    - int8
-- budgets_expense_transactions
-  - **expense_transaction_id**
-    - Viiteavain expense_transactions-tauluun
-    - int8
-  - **budget_id**
-    - Viiteavain budgets-tauluun
-    - int8
-- categories
-  - **id**
-    - int8
-  - created_at
-    - timestamp
-  - category_name
-    - text
-  - user_id
-    - Viiteavain auth.users-tauluun
-    - uuid
-  - category_type
-    - numeric
-    - 0 = kulujen kategoria, 1 = tulojen kategoria
-- expense_transactions
-  - **id**
-    - int8
-  - date
-    - date
-  - reference-number
-    - numeric
-  - description
-    - text
-  - amount
-    - numeric
-  - account_to
-    - text
-  - account_from
-    - int8
-  - category
-    - Viiteavain categories-tauluun
-    - int8
-- income_transactions
-  - **id**
-    - int8
-  - date
-    - date
-  - reference-number
-    - numeric
-  - description
-    - text
-  - amount
-    - numeric
-  - account_from
-    - text
-  - account_to
-    - int8
-  - category
-    - Viiteavain categories-tauluun
-    - int8
+Taulukoiden pääavaimet on merkitty lihavoinnilla, ja kenttien tietotyypit on merkitty kursivoinnilla. Pääavaimet ovat automaattisesti pakollisia, joten niiden pakollisuutta ei ole erikseen kirjoitettu.
+
+##### Käyttäjätilit - ```auth.users```
+
+```auth```-skeeman ```users```-taulu on Supabasen autentikointijärjestelmän automaattisesti luotu taulu, johon jokainen rekisteröitynyt käyttäjä tallennetaan. Taulun kenttää ```id``` käytetään useassa taulussa kentässä ```user_id``` käyttäjän tunnistamiseen.
+
+##### Tilit – ```accounts```
+
+Älä sekoita käyttäjätileihin, jotka tallennetaan tauluun auth.users.
+
+Pankkitili, jolla on tilinumero ja valinnainen nimi sekä käyttäjätili, joka omistaa pankkitilin.
+
+- **id**
+  - *int8*
+  - Pääavain
+- user_id
+  - *uuid*
+  - Viiteavain [```auth.users```](#käyttäjätilit---authusers)-tauluun
+  - Pakollinen
+- account_number
+  - *text*
+  - Pakollinen
+- account_name
+  - *text*
+- created_at
+  - *timestamp*
+
+##### Budjetit – ```budgets```
+
+Budjetti, jolla on omistajan käyttäjätili, rahamäärä, jonka saavuttamista sovellus tarkkailee, ja alku- ja loppupäivä tai toistumisväli. Budjetilla on lisäksi valinnainen nimi.
+
+Vain joko kentät ```start_date``` ja ```end_date``` tai kenttä ```repeating``` täytetään. Jompi kumpi on pakko täyttää, mutta tietokanta ei kuitenkaan estä laittamasta molemmille arvoa tai jättämästä molempia tyhjäksi.
+
+Budjettiin liittyvät myös taulut [```budgets_accounts```](#budjettien-tilit--budgets_accounts), [```budgets_categories```](#budjettien-kategoriat--budgets_categories), [```budgets_income_transactions```](#budjettien-tulot--budgets_income_transactions) ja , [```budgets_expense_transactions```](#budjettien-menot--budgets_expense_transactions).
+
+- **id**
+  - *int8*
+  - Pääavain
+- user_id
+  - *uuid*
+  - Viiteavain [```auth.users```](#käyttäjätilit---authusers)-tauluun
+  - Pakollinen
+- start_date
+  - *date*
+- end_date
+  - *date*
+- created_at
+  - *timestamp*
+  - Automaattinen arvo: ```now()```
+- budget_name
+  - *text*
+- amount
+  - *numeric*
+  - Pakollinen
+- repeating
+  - *text*
+
+##### Budjettien tilit – ```budgets_accounts```
+
+Budjetin tarkkailemat pankkitilit, eli tilit joiden tapahtumat lasketaan mukaan budjetin kuluihin ja tuloihin. Näihin tapahtumiin vaikuttavat myös [budjettien kategoriat](#budjettien-kategoriat--budgets_categories).
+
+- **account_id**
+  - *int8*
+  - Pääavain
+  - Viiteavain [```accounts```](#tilit--accounts)-tauluun
+- **budget_id**
+  - *int8*
+  - Pääavain
+  - Viiteavain [```budgets```](#budjetit--budgets)-tauluun
+
+##### Budjettien kategoriat – ```budgets_categories```
+
+Budjetin tarkkailemat kategoriat, eli kategoriat joiden tapahtumat lasketaan mukaan budjetin kuluihin ja tuloihin. Näihin tapahtumiin vaikuttavat myös [budjettien tilit](#budjettien-tilit--budgets_accounts).
+
+- **budget_id**
+  - *int8*
+  - Pääavain
+  - Viiteavain [```budgets```](#budjetit--budgets)-tauluun
+- **budget_category_id**
+  - *int8*
+  - Pääavain
+  - Viiteavain [```categories```](#kategoriat--categories)-tauluun
+
+##### Budjettien tulot – ```budgets_income_transactions```
+
+Budjetin tuloihin vaikuttavat tapahtumat. Nämä voi saada suoraan tulojen taulusta, mutta ne tallennetaan tänne nopeampaa hakua varten. Tämän taulun sisältöä päivitetään budjetin päivitykseen liittyvillä funktioilla ja triggereillä.
+
+- **income_transaction_id**
+  - *int8*
+  - Pääavain
+  - Viiteavain [```income_transactions```](#tulot--income_transactions)-tauluun
+- **budget_id**
+  - *int8*
+  - Pääavain
+  - Viiteavain [```budgets```](#budjetit--budgets)-tauluun
+
+##### Budjettien kulut – ```budgets_expense_transactions```
+
+Budjetin kuluihin vaikuttavat tapahtumat. Nämä voi saada suoraan kulujen taulusta, mutta ne tallennetaan tänne nopeampaa hakua varten. Tämän taulun sisältöä päivitetään budjetin päivitykseen liittyvillä funktioilla ja triggereillä.
+
+- **expense_transaction_id**
+  - *int8*
+  - Pääavain
+  - Viiteavain [```expense_transactions```](#kulut--expense_transactions)-tauluun
+- **budget_id**
+  - *int8*
+  - Pääavain
+  - Viiteavain [```budgets```](#budjetit--budgets)-tauluun
+
+##### Kategoriat – ```categories```
+
+Pankkitapahtuman kategoria, jolla on tyyppi (kulu tai tulo), nimi ja omistajan käyttäjätili.
+
+- **id**
+  - *int8*
+  - Pääavain
+- created_at
+  - *timestamp*
+  - Pakollinen
+  - Automaattinen arvo: ```now()```
+- category_name
+  - *text*
+  - Pakollinen
+- user_id
+  - *uuid*
+  - Viiteavain [```auth.users```](#käyttäjätilit---authusers)-tauluun
+  - Pakollinen
+- category_type
+  - *numeric*
+  - Pakollinen
+  - 0 = kulujen kategoria, 1 = tulojen kategoria
+
+##### Kulut – ```expense_transactions```
+
+Kululla on päivämäärä, rahamäärä, kategoria ja tili, jolta kulu on maksettu. Lisäksi valinnaisia kenttiä ovat kulun viitenumero, saaja (josta käytetään sovelluksessa myös nimeä "Nimi") ja kulun tekstikuvaus.
+
+Kulun omistava käyttäjätili määritetään esimerkiksi hakemalla tili taulusta [```accounts```](#tilit--accounts).
+
+- **id**
+  - *int8*
+  - Pääavain
+- date
+  - *date*
+  - Pakollinen
+- reference-number
+  - *numeric*
+- description
+  - *text*
+- amount
+  - *numeric*
+  - Pakollinen
+- account_to
+  - *text*
+- account_from
+  - *int8*
+  - Viiteavain [```accounts```](#tilit--accounts)-tauluun
+  - Pakollinen
+- category
+  - *int8*
+  - Viiteavain [```categories```](#kategoriat--categories)-tauluun
+  - Pakollinen
+
+##### Tulot – ```income_transactions```
+
+Tulolla on päivämäärä, rahamäärä, kategoria ja tili, jolle tulo on maksettu. Lisäksi valinnaisia kenttiä ovat tulon viitenumero, maksaja (josta käytetään sovelluksessa myös nimeä "Nimi") ja tulon tekstikuvaus.
+
+Tulon omistava käyttäjätili määritetään esimerkiksi hakemalla tili taulusta [```accounts```](#tilit--accounts).
+
+- **id**
+  - *int8*
+  - Pääavain
+- date
+  - *date*
+  - Pakollinen
+- reference-number
+  - *numeric*
+- description
+  - *text*
+- amount
+  - *numeric*
+  - Pakollinen
+- account_from
+  - *text*
+- account_to
+  - *int8*
+  - Viiteavain [```accounts```](#tilit--accounts)-tauluun
+  - Pakollinen
+- category
+  - *int8*
+  - Viiteavain [```categories```](#kategoriat--categories)-tauluun
+  - Pakollinen
+
+#### Funktiot ja triggerit
+
