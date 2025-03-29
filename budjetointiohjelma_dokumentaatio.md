@@ -32,11 +32,15 @@ Kirjauduttuasi sisään saavut budjetointiohjelman etusivulle.
 
 Jatkossa riittää tehdä vain vaiheet 2, 4 ja 5. Jos sovellusta on päivitetty eikä se enää avaudu, suorita ```npm install``` ja kokeile uudestaan.
 
+---
+
 ### React-sovellus
 
-Sivuston HTML-sisältö ```index.html``` kutsuu 
+Sivuston HTML-sisältö ```index.html``` kutsuu skriptin ```/src/main.jsx```, joka luo sovelluksen (```<App />```) ```<div id="root">```-elementtiin.
 
-Sovelluksen suoritus aloitetaan ```src/main.jsx```-tiedostosta, joka luo sovelluksen rakenteen sisältävän App-komponentin tiedostosta ```src/App.jsx```. App.jsx tarkistaa käyttäjän kirjautumisen tilan ja palauttaa ```BrowserRouter```in sovelluksen eri sivujen välistä navigaatiota varten. Se sisältää myös ```HeaderNav```-elementin eli sovelluksen otsikko- ja navigaatiopalkin.
+Tiedosto ```src/App.jsx``` sisältää sovelluksen rakenteen. App.jsx tarkistaa käyttäjän kirjautumisen tilan ja palauttaa ```BrowserRouter```in sovelluksen eri sivujen välistä navigaatiota varten. Oletussivu on [```<Home />```](#kotisivu--home) ```UserProvider```, ```BudgetProvider``` yms. ympäröivät BrowserRouteria, jotta [kontekstit](#kontekstit-context) ovat käytettävissä sovelluksen osissa. App.jsx sisältää myös [```HeaderNav```](#otsikkorivi-ja-navigaatio--headernav)-elementin eli sovelluksen otsikko- ja navigaatiopalkin.
+
+<br>
 
 ```src/actions``` sisältää erilaisia toimintoja. Monet sovelluksen toiminnoista on kirjoitettu osaksi komponentteja tai sivuja, mutta osa on erikseen täällä kansiossa.
 
@@ -52,11 +56,79 @@ Sovelluksen suoritus aloitetaan ```src/main.jsx```-tiedostosta, joka luo sovellu
 
 ```src/pages``` sisältää sovelluksen eri sivut, joiden välillä käyttäjä voi navigoida App.jsx-tiedostossa määritellyn ```BrowserRouter```in avulla.
 
+#### Sivut (pages)
+
+##### Kotisivu – Home
+
+Sovelluksen ensimmäinen sivu. Sisältää linkit [rekisteröitymiseen](#rekisteröityminen--register) ja [kirjautumiseen](#kirjautuminen--login).
+
+##### Budgettisivu – BudgetPage
+
+
+
+##### Budjetin luonti – CreateBudget
+
+
+
+##### Etusivu – Dashboard
+
+
+
+##### Kirjautuminen – Login
+
+
+
+##### Rekisteröityminen – Register
+
+
+
+##### Asetukset – Settings
+
+
+
+##### Pankkitapahtumien luonti – TransactionImport
+
+
+
 #### Toiminnot (actions)
 
 
 
 #### Komponentit (components)
+
+##### Tilivalikko – AccountDropdown
+
+
+
+##### Ensimmäisen tilin luonti – AccountSelectionModule
+
+
+
+##### Budjettiluettelon alkio – BudgetListItem
+
+
+
+##### Otsikkorivi ja navigaatio – HeaderNav
+
+
+
+##### Kirjautuneen käyttäjän ohjaus – ProtectedRoute
+
+
+
+##### Pankkitapahtuman muokkausnäkymä – TransactionEditView
+
+
+
+##### Pankkitapahtuman CSV-tiedoston vienti – TransactionFileImport
+
+
+
+##### Pankkitapahtumaluettelo – TransactionList
+
+
+
+##### Pankkitapahtumaluettelon alkio – TransactionListItem
 
 
 
@@ -64,9 +136,7 @@ Sovelluksen suoritus aloitetaan ```src/main.jsx```-tiedostosta, joka luo sovellu
 
 
 
-#### Sivut (pages)
-
-
+---
 
 ### Tietokanta
 
@@ -76,7 +146,7 @@ Tietokantapalveluna toimii Supabase, joka käyttää PostgreSQL-tietokantaa.
 
 Taulukoiden pääavaimet on merkitty lihavoinnilla, ja kenttien tietotyypit on merkitty kursivoinnilla. Pääavaimet ovat automaattisesti pakollisia, joten niiden pakollisuutta ei ole erikseen kirjoitettu.
 
-##### Käyttäjätilit - ```auth.users```
+##### Käyttäjätilit – ```auth.users```
 
 ```auth```-skeeman ```users```-taulu on Supabasen autentikointijärjestelmän automaattisesti luotu taulu, johon jokainen rekisteröitynyt käyttäjä tallennetaan. Taulun kenttää ```id``` käytetään useassa taulussa kentässä ```user_id``` käyttäjän tunnistamiseen.
 
