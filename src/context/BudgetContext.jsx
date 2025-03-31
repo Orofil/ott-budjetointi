@@ -42,7 +42,7 @@ export const BudgetProvider = ({ children }) => {
     }
     budget.id = id;
 
-    // TODO nämä tietokantafunktioon jotta kaiken voi peruutta jos jokin osa menee väärin
+    // TODO nämä tietokantafunktioon jotta kaiken voi peruuttaa jos jokin osa menee väärin
     // Tallennetaan seurattavat kategoriat
     const { error: error2 } = await supabase
       .from("budgets_categories")
@@ -83,8 +83,16 @@ export const BudgetProvider = ({ children }) => {
     return id;
   };
 
+  const deleteBudget = async (budget) => {
+    const response = await supabase
+      .from("budgets")
+      .delete()
+      .eq("id", budget.id);
+    console.log("Budjetti", budget.id, "poistettu, vastaus:", response);
+  }
+
   return (
-    <BudgetContext.Provider value={{ budgets, addBudget, loading }}>
+    <BudgetContext.Provider value={{ budgets, addBudget, deleteBudget, loading }}>
       {children}
     </BudgetContext.Provider>
   );

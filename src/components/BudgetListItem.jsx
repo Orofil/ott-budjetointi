@@ -1,23 +1,18 @@
-import { Button, Col, Container, Row } from "react-bootstrap";
+import { Button, Card, Col } from "react-bootstrap";
 import { ChevronRight } from "react-bootstrap-icons";
 import { findBudgetRepeating } from "../constants/BudgetRepeating";
 
-const BudgetListItem = ({ budget }) => {
+const BudgetListItem = ({ budget, onAction }) => {
   return (
-    <Button
-      variant="light"
-      className="text-start p-3 border rounded shadow-sm"
-    >
-      <Container fluid>
-        <Row className="align-items-center">
-          <Col xs="5" className="fs-4">
-            {budget.budget_name}
-          </Col>
-          
-          <Col xs="3" className="fw-bold fs-4 text-end">
-            {budget.amount} €
-          </Col>
-
+    <Col key={budget.id} xs={12} md={6} lg={4}>
+      <Card className="border-0 shadow-sm rounded-3 bg-white">
+        <Card.Body>
+          <div className="d-flex justify-content-between">
+            <h5 className="fw-bold text-dark">{budget.budget_name}</h5>
+          </div>
+          <p className="text-dark"></p> {/* sisennys */}
+          <p className="text-dark">Summa: {budget.amount} €</p>
+          <p className="text-dark">Kategoria: {budget.categories} </p>
           <Col xs="3" className="text-muted">
             {budget.repeating ?
               findBudgetRepeating(budget.repeating).text :
@@ -25,12 +20,27 @@ const BudgetListItem = ({ budget }) => {
             }
           </Col>
 
-          <Col xs="1">
-            <ChevronRight className="fs-3" />
-          </Col>
-        </Row>
-      </Container>
-    </Button>
+          {/* progress bar */}
+          <div className="progress my-2" style={{ height: "8px" }}>
+            <div 
+              className="progress-bar bg-success" 
+              role="progressbar" 
+              style={{ width: `${(budget.used / budget.amount) * 100}%` }} 
+              aria-valuenow={budget.used} 
+              aria-valuemin="0" 
+              aria-valuemax={budget.amount}
+            />
+          </div>
+          <p className="text-muted">Käytetty: {budget.used} € / {budget.amount} €</p>
+          
+          <small className="text-muted">{budget.startDate ? budget.startDate.toLocaleDateString('fi-FI') : ''} - {budget.endDate ? budget.endDate.toLocaleDateString('fi-FI') : ''}</small>
+          
+        </Card.Body>
+        <Card.Footer className="bg-white d-flex justify-content-between">
+          <Button variant="outline-primary" onClick={onAction}>Tarkastele</Button>
+        </Card.Footer>
+      </Card>
+    </Col>
   );
 };
 
