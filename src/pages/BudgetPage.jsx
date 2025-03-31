@@ -1,9 +1,8 @@
 import { useContext, useState } from "react";
 import { BudgetContext } from "../context/BudgetContext";
 import { Button, Col, Form, Modal, Row, Stack } from "react-bootstrap";
-import { Link } from "react-router-dom";
 import BudgetListItem from "../components/BudgetListItem";
-import CreateBudgetPage from "./CreateBudget";
+import CreateBudgetPage from "../components/CreateBudget";
 import { Doughnut } from "react-chartjs-2";
 
 // Tämä komponentti hakee ja näyttää kaikki budjetit tietokannasta.
@@ -88,12 +87,6 @@ const BudgetListPage = () => {
               <p>Ei budjetteja</p>
             )}
           </Row>
-
-          <div className="new-budget-button">
-            <Link to="/create-budget">
-              <button>Lisää uusi budjetti</button>
-            </Link>
-          </div>
         </div>
       </Row>
 

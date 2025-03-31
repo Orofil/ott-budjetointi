@@ -43,7 +43,6 @@ function App() {
                     />
                     <Route path="/transaction-import" element={<TransactionImport />} />
                     <Route path="/budgets" element={<Budgets />} />
-                    <Route path="/create-budget" element={<CreateBudgetPage />} />
                     <Route path="/editCategories" element={<EditCategories />} />
                   </Routes>
                 </Row>
