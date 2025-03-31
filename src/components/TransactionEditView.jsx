@@ -111,7 +111,7 @@ function TransactionEditView({ data, onSubmit }) {
     } else if (buttonName === "delete") {
       success = handleDelete();
     }
-    onSubmit(success);
+    if (onSubmit) onSubmit(success);
     setPending(false);
   };
 

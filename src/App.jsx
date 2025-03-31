@@ -9,7 +9,6 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import TransactionImport from "./pages/TransactionImport";
 import Budgets from "./pages/BudgetPage";
-import CreateBudgetPage from "./pages/CreateBudget";
 import EditCategories from "./pages/EditCategories";
 import HeaderNav from "./components/HeaderNav";
 import { CategoryProvider } from "./context/CategoryContext";
