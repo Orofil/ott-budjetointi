@@ -54,7 +54,7 @@ function TransactionEditView({ data, onSubmit }) {
     return false;
   }
 
-  const handleCreateOrEdit = () => {
+  const handleCreateOrEdit = async () => {
     const { amount, date, account, reference_number, category } = values;
     const errorList = [];
     if (!amount || Number(amount) == 0) {
@@ -80,9 +80,9 @@ function TransactionEditView({ data, onSubmit }) {
     if (!errorList.length) {
       let data;
       if (values.id) {
-        data = updateTransaction(values);
+        data = await updateTransaction(values);
       } else {
-        data = createTransaction(values);
+        data = await createTransaction(values);
       }
       if (data) {
         setValues({
