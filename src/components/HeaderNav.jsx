@@ -117,8 +117,8 @@ const HeaderNav = () => {
               <Nav.Link as={Link} to="/budgets" className="text-white mx-3">
                 Budjettien hallinta
               </Nav.Link>
-              <Nav.Link as={Link} to="/settings" className="text-white mx-3">
-                Asetukset
+              <Nav.Link as={Link} to="/editCategories" className="text-white mx-3">
+                Omat kategoriat
               </Nav.Link>
             </Nav>
           )}
@@ -150,7 +150,7 @@ const HeaderNav = () => {
                   <Nav.Link as={Link} to="/dashboard">Kotisivu</Nav.Link>
                   <Nav.Link as={Link} to="/transaction-import">Tapahtumien tuonti</Nav.Link>
                   <Nav.Link as={Link} to="/budgets">Budjettien hallinta</Nav.Link>
-                  <Nav.Link as={Link} to="/settings">Asetukset</Nav.Link>
+                  <Nav.Link as={Link} to="/editCategories">Omat kategoriat</Nav.Link>
                 </Nav>
               </Offcanvas.Body>
             </Navbar.Offcanvas>

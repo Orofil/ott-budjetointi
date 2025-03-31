@@ -10,7 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import TransactionImport from "./pages/TransactionImport";
 import Budgets from "./pages/BudgetPage";
 import CreateBudgetPage from "./pages/CreateBudget";
-import Settings from "./pages/Settings";
+import EditCategories from "./pages/EditCategories";
 import HeaderNav from "./components/HeaderNav";
 import { CategoryProvider } from "./context/CategoryContext";
 import { AccountProvider } from "./context/AccountContext";
@@ -44,7 +44,7 @@ function App() {
                     <Route path="/transaction-import" element={<TransactionImport />} />
                     <Route path="/budgets" element={<Budgets />} />
                     <Route path="/create-budget" element={<CreateBudgetPage />} />
-                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/editCategories" element={<EditCategories />} />
                   </Routes>
                 </Row>
               </Container>
