@@ -65,7 +65,7 @@ function Dashboard() {
         <Col md={6}>
           <Card className="shadow p-4">
             <Card.Body>
-              <h4 className="text-center">Budjettin määrä</h4>
+              <h4 className="text-center">Budjetin määrä</h4>
               <Pie data={pieData1} />
             </Card.Body>
           </Card>
@@ -73,7 +73,7 @@ function Dashboard() {
         <Col md={6}>
           <Card className="shadow p-4">
             <Card.Body>
-              <h4 className="text-center">Menot kategorioittain (Piirakkadiagrammi)</h4>
+              <h4 className="text-center">Menot kategorioittain</h4>
               <Pie data={pieData2} />
             </Card.Body>
           </Card>
@@ -83,7 +83,7 @@ function Dashboard() {
         <Col md={12}>
           <Card className="shadow p-4">
             <Card.Body>
-              <h4 className="text-center">Menot tässä kuussa (Pylväsdiagrammi)</h4>
+              <h4 className="text-center">Menot tässä kuussa</h4>
               <Bar data={barData} />
             </Card.Body>
           </Card>
