@@ -72,7 +72,7 @@ const BudgetListPage = () => {
             {loading && <p>Ladataan...</p>}
             {/* Näytetään joko hakutulokset tai kaikki budjetit jos mitään ei ole haettu */}
             {!loading && (searchQuery
-            ? budgets.filter(b => b.name.toLowerCase().includes(searchQuery.toLowerCase()))
+            ? budgets.filter(b => b.budget_name.toLowerCase().includes(searchQuery.toLowerCase()))
             : budgets).map((budget) => (
               <BudgetListItem
               key={budget.id}
