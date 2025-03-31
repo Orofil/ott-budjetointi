@@ -5,7 +5,7 @@ export const createTransaction = async (t) => {
   // Lisätään tapahtuma
   const { data, error } = await supabase.rpc("add_transaction", {
     p_date: t.date,
-    p_reference_number: t.reference_number,
+    p_reference_number: t.reference_number === "" ? null : Number(tr.reference_number),
     p_description: t.description,
     p_amount: t.amount,
     p_account: t.account,

@@ -9,9 +9,9 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import TransactionImport from "./pages/TransactionImport";
 import Budgets from "./pages/BudgetPage";
-import CreateBudgetPage from "./pages/CreateBudget";
 import EditCategories from "./pages/EditCategories";
 import HeaderNav from "./components/HeaderNav";
+import ForgotPassword from "./pages/ForgotPassword";
 import { CategoryProvider } from "./context/CategoryContext";
 import { AccountProvider } from "./context/AccountContext";
 import { BudgetProvider } from "./context/BudgetContext";
@@ -43,8 +43,8 @@ function App() {
                     />
                     <Route path="/transaction-import" element={<TransactionImport />} />
                     <Route path="/budgets" element={<Budgets />} />
-                    <Route path="/create-budget" element={<CreateBudgetPage />} />
                     <Route path="/editCategories" element={<EditCategories />} />
+                    <Route path="/forgotPassword" element={<ForgotPassword/>} />
                   </Routes>
                 </Row>
               </Container>
