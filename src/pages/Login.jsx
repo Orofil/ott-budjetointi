@@ -10,6 +10,8 @@ function Login() {
   const [message, setMessage] = useState("");
   const [isEmailSent, setIsEmailSent] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotMessage, setForgotMessage] = useState("");
 
   // Tarkistetaan, onko käyttäjä jo kirjautunut
   useEffect(() => {
@@ -22,6 +24,27 @@ function Login() {
     checkSession();
   }, [navigate]);
 
+  // salasanan palautukseen
+  const handleForgot = async (event) => {
+    event.preventDefault();
+    setForgotMessage("");
+
+    if (!forgotEmail) {
+      setForgotMessage("Anna sähköpostiosoite.");
+      return;
+    }
+
+    const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+      redirectTo: "http://localhost:5173/forgotpassword", 
+    });
+
+    if (error) {
+      setForgotMessage("Salasanan palautus epäonnistui. Tarkista sähköposti.");
+    } else {
+      setForgotMessage("Palautuslinkki lähetetty sähköpostiisi!");
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setMessage("");
@@ -30,7 +53,7 @@ function Login() {
       email,
       password,
     });
-
+ 
     if (error) {
       if (error.message.toLowerCase().includes("invalid login credentials")) {
         setMessage("Väärä sähköposti tai salasana.");
@@ -132,14 +155,15 @@ function Login() {
           <Row className="mb-3 w-100 justify-content-center">
               <Col xs={6} md={4} className="text-end fw-bold">Sähköposti</Col>
               <Col xs={4} md={6}>
-                <Form.Control type="email" placeholder="Sähköposti" value={email} onChange={(e) => setEmail(e.target.value)} required />
-              </Col>
-            </Row>
+              <Form.Control type="email" placeholder="Sähköposti" value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} />
+            </Col>
+          </Row>
+          {forgotMessage && <div className="text-danger text-center">{forgotMessage}</div>}
         </Modal.Body>
 
         <Modal.Footer>
           
-          <Button variant="primary">Lähetä</Button>
+          <Button variant="primary" onClick={handleForgot}>Lähetä</Button>
         </Modal.Footer>
       </Modal.Dialog>
       </Modal>
