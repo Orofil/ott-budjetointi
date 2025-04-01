@@ -7,6 +7,14 @@
 ### Asennus
 
 
+1. Lataa projektin tiedostot koneellesi
+2. Avaa komentokehote ja siirry kansioon, jossa projektisi on
+3. Suorita ```npm install``` ([Node.js](https://nodejs.org/en) vaaditaan)
+4. Suorita ```npm run dev```
+5. Avaa komentokehotteeseen ilmestynyt osoite, joka alkaa ```http://localhost:```...
+
+Jatkossa riittää tehdä vain vaiheet 2, 4 ja 5. Jos sovellusta on päivitetty eikä se enää avaudu, suorita ```npm install``` ja kokeile uudestaan.
+
 
 ### Käyttäminen
 
