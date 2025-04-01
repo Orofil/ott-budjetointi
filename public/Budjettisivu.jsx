@@ -128,7 +128,7 @@ const BudgetListPage = () => {
               </div>
               <p className="text-dark"></p> {/* sisennys */}
               <p className="text-dark">Summa: {budget.amount} €</p>
-              <p className="text-dark">Kategoria: {budget.category} </p>
+              <p className="text-dark">Kategoria: {budget.categories} </p>
               
 
               {/* progress bar */}
