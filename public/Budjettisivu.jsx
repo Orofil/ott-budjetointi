@@ -230,7 +230,7 @@ const BudgetListPage = () => {
       <>
           <h4>Budjetin tiedot:</h4>
           <p><strong>Budjetti:</strong> {selectedBudget.amount} €</p>
-          <p><strong>Kategoria:</strong> {selectedBudget.category}</p>
+          <p><strong>Kategoria:</strong> {selectedBudget.categories}</p>
           <p><strong>Aikaväli:</strong> {selectedBudget.startDate?.toLocaleDateString('fi-FI')} - {selectedBudget.endDate?.toLocaleDateString('fi-FI')}</p>
           <p><strong>Tilit:</strong> {selectedBudget.accounts?.join(', ')}</p>
           <p><strong>Jäljellä olevat päivät:</strong> {selectedBudget.endDate ? Math.max(0, Math.ceil((selectedBudget.endDate - new Date()) / (1000 * 60 * 60 * 24))) : '-'}</p>
