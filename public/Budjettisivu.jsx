@@ -29,7 +29,9 @@ const BudgetListPage = () => {
   const [budgetAmount, setBudgetAmount] = useState("");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
-  const [category, setCategory] = useState("Kaikki");
+  const [categories, setCategories] = useState([]);
+  const [accounts, setAccounts] = useState([]);
+  const [recurrence, setRecurrence] = useState([]);
   const [budjetit, setBudjetit] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [showNotFound, setShowNotFound] = useState(false);
@@ -43,7 +45,9 @@ const BudgetListPage = () => {
       amount: budgetAmount,
       startDate,
       endDate,
-      category,
+      categories,
+      accounts,
+      recurrence,
     };
     setBudjetit([...budjetit, newBudget]); // budjetin lisäys
     setShowPopup(false);
@@ -51,7 +55,9 @@ const BudgetListPage = () => {
     setBudgetAmount("");
     setStartDate(null);
     setEndDate(null);
-    setCategory("Kaikki");
+    setCategories([]);
+    setAccounts([]);
+    setRecurrence([]);
   };
 
   // avaa valitun budjetin tarkastelupopupin
@@ -78,6 +84,7 @@ const BudgetListPage = () => {
     const found = budjetit.some(b => b.name.toLowerCase().includes(searchQuery.toLowerCase()));
     setShowNotFound(!found);
   };
+
 
   return (
     <div fluid className="p-0">
@@ -176,12 +183,35 @@ const BudgetListPage = () => {
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="budgetCategory">
-              <Form.Label>Kategoria</Form.Label>
-              <Form.Select value={category} onChange={(e) => setCategory(e.target.value)}>
-                <option>Kaikki</option> {/* automaattisesti valittuna */}
-                <option>Ruoka</option> {/* nämä kolme vain esimerkkeinä */}
-                <option>Asuminen</option> {/* kategoriat täyttyy sitä mukaa kun käyttäjä luo niitä */}
+              <Form.Label>Kategoriat</Form.Label>
+              <Form.Select value={categories.length === 0 ? "Kaikki" : categories}
+               onChange={(e) => setCategories([...e.target.selectedOptions].map(o => o.value))}>
+                <option>Kaikki</option>
+                <option>Ruoka</option>
+                <option>Asuminen</option>
                 <option>Matkustaminen</option>
+                <option>Vapaa-aika</option>
+              </Form.Select>
+            </Form.Group>
+
+
+            <Form.Group className="mb-3" controlId="budgetAccount">
+              <Form.Label>Tilit</Form.Label>
+              <Form.Select value={accounts.length === 0 ? "Päätili" : accounts}
+               onChange={(e) => setAccounts([...e.target.selectedOptions].map(o => o.value))}>
+                <option>Päätili</option> {/* tässä oletusarvot, en tiedä mitä todellisuudessa halutaan) */}
+                <option>Säästötili</option>
+                <option>Luottokortti</option>
+              </Form.Select>
+            </Form.Group>
+
+            <Form.Group className="mb-3" controlId="budgetRecurrence">
+              <Form.Label>Toistuvuus</Form.Label>
+              <Form.Select value={recurrence.length === 0 ? "Ei toistu" : recurrence} onChange={(e) => setRecurrence(e.target.value)}>
+                <option>Ei toistu</option> {/* tässä oletusarvot, en tiedä mitä todellisuudessa halutaan) */}
+                <option>Viikoittain</option>
+                <option>Kuukausittain</option>
+                <option>Vuosittain</option>
               </Form.Select>
             </Form.Group>
 
@@ -202,6 +232,7 @@ const BudgetListPage = () => {
           <p><strong>Budjetti:</strong> {selectedBudget.amount} €</p>
           <p><strong>Kategoria:</strong> {selectedBudget.category}</p>
           <p><strong>Aikaväli:</strong> {selectedBudget.startDate?.toLocaleDateString('fi-FI')} - {selectedBudget.endDate?.toLocaleDateString('fi-FI')}</p>
+          <p><strong>Tilit:</strong> {selectedBudget.accounts?.join(', ')}</p>
           <p><strong>Jäljellä olevat päivät:</strong> {selectedBudget.endDate ? Math.max(0, Math.ceil((selectedBudget.endDate - new Date()) / (1000 * 60 * 60 * 24))) : '-'}</p>
 
         {/* tässä oleusarvot, haetaan todellisuudessa tietokannasta) */}
