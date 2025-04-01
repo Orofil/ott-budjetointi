@@ -205,6 +205,38 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+/* Budjetin haku */
+
+CREATE OR REPLACE FUNCTION get_budgets(p_user_id UUID)
+RETURNS TABLE (
+    id BIGINT,
+    user_id UUID,
+    start_date DATE,
+    end_date DATE,
+    created_at TIMESTAMP,
+    budget_name TEXT,
+    amount NUMERIC,
+    repeating TEXT,
+    categories BIGINT[],
+    accounts BIGINT[]
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        b.*,
+        array_agg(DISTINCT bc.budget_category_id) AS categories,
+        array_agg(DISTINCT ba.account_id) AS accounts
+    FROM budgets b
+    LEFT JOIN budgets_categories bc ON b.id = bc.budget_id
+    LEFT JOIN budgets_accounts ba ON b.id = ba.budget_id
+    WHERE b.user_id = p_user_id
+    GROUP BY b.id;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT get_budgets('f6b53cb8-4c50-4a74-a2a9-b0f4c6653207');
+
+
 /* Budjettien tapahtumien lisääminen */
 
 -- Tapahtumien lisäys

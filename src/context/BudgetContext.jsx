@@ -12,8 +12,9 @@ export const BudgetProvider = ({ children }) => {
   useEffect(() => {
     const loadBudgets = async () => {
       setLoading(true);
-      const { data, error } = await supabase.from("budgets").select()
-        .eq("user_id", user.id);
+      const { data, error } = await supabase.rpc("get_budgets", {
+        p_user_id: user.id
+      });
       if (error) {
         console.error("Virhe budjettien haussa:", error);
         setLoading(false);
@@ -21,6 +22,12 @@ export const BudgetProvider = ({ children }) => {
       }
       setBudgets(data);
       setLoading(false);
+
+      // Haetaan samalla myös kuinka paljon budjetista on käytetty
+      for (let i = 0; i < data.length; i++) {
+        data[i].used = await getUsedAmount(data[i].id, null, null); // Päivämäärät on tällä hetkellä null
+      }
+      setBudgets(data);
     };
     loadBudgets();
   }, []);
@@ -83,16 +90,41 @@ export const BudgetProvider = ({ children }) => {
     return id;
   };
 
-  const deleteBudget = async (budget) => {
-    const response = await supabase
+  const deleteBudget = async (budget_id) => {
+    const { error, status } = await supabase
       .from("budgets")
       .delete()
-      .eq("id", budget.id);
-    console.log("Budjetti", budget.id, "poistettu, vastaus:", response);
+      .eq("id", budget_id);
+    if (error) {
+      console.error("Virhe budjetin poistamisessa:", error);
+      return;
+    }
+    console.log("Budjetti", budget_id, "poistettu, vastaus:", status);
+    setBudgets((prev) => prev.filter(b => b.id !== budget_id));
+  }
+
+  const getUsedAmount = async (budget_id, start_date, end_date) => {
+    const data = await getBudgetTransactions(budget_id, start_date, end_date);
+    if (data == null) return;
+    let result = -1 * data.reduce((n, {amount}) => n + amount, 0); // Lasketaan tapahtumien summa, vaihdetaan etumerkki koska on kyse kulutuksen määrästä
+    return result.toFixed(2); // Pyöristetään jotta piilotetaan pyöristysvirheet
+  }
+
+  const getBudgetTransactions = async (budget_id, start_date, end_date) => {
+    const { data, error } = await supabase.rpc("get_budget_transactions", {
+      p_budget_id: budget_id,
+      p_start_date: start_date,
+      p_end_date: end_date
+    });
+    if (error) {
+      console.error("Virhe budjetin tapahtumien haussa:", error);
+      return;
+    }
+    return data;
   }
 
   return (
-    <BudgetContext.Provider value={{ budgets, addBudget, deleteBudget, loading }}>
+    <BudgetContext.Provider value={{ budgets, addBudget, deleteBudget, getBudgetTransactions, loading }}>
       {children}
     </BudgetContext.Provider>
   );

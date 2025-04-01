@@ -5,21 +5,21 @@ import BudgetListItem from "../components/BudgetListItem";
 import CreateBudgetPage from "../components/CreateBudget";
 import { Doughnut } from "react-chartjs-2";
 import supabase from "../config/supabaseClient";
+import { CategoryContext } from "../context/CategoryContext";
+import { findBudgetRepeating } from "../constants/BudgetRepeating";
 
 const BudgetPage = () => {
-  const { budgets, deleteBudget, loading } = useContext(BudgetContext);
+  const { budgets, deleteBudget, getBudgetTransactions, loading } = useContext(BudgetContext);
+  const { expenseCategories, incomeCategories } = useContext(CategoryContext);
   const [searchQuery, setSearchQuery] = useState("");
   const [showNotFound, setShowNotFound] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [showBudgetPopup, setShowBudgetPopup] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState(null);
   const [showDeleteConfirmPopup, setShowDeleteConfirmPopup] = useState(false);
-  const [usedAmount, setUsedAmount] = useState(0);
 
-  // Uudet muuttujat tapahtuman tiedoille
-  const [expenseDates, setExpenseDates] = useState([]); // Tallentaa tapahtumien päivämäärät
-  const [expenseCategories, setExpenseCategories] = useState([]); // Tallentaa tapahtumien kategoriat
-  const [expenseAmounts, setExpenseAmounts] = useState([]); // Tallentaa tapahtumien summat
+  // Budjetin pankkitapahtumat
+  const [budgetTransactions, setBudgetTransactions] = useState([]);
 
   // Ilmoitus, jos haettua budjettia ei löydy
   const handleSearch = () => {
@@ -29,12 +29,6 @@ const BudgetPage = () => {
     setShowNotFound(!found);
   };
 
-  // Mahdollisuus budjettin poistoon
-  const handleDelete = (id) => {
-    deleteBudget(id);
-    setShowDeleteConfirmPopup(true);
-  };
-
   // Poistaa budjetin, jos varmistus hyväksytään
   const confirmDelete = () => {
     deleteBudget(selectedBudget.id);
@@ -42,54 +36,14 @@ const BudgetPage = () => {
     setShowBudgetPopup(false);
   };
 
-  // Haetaan valitun budjetin käytetty summa, tapahtumatiedot ja tallennetaan ne erillisiin muuttujiin
+  // Haetaan valitun budjetin tapahtumatiedot
   useEffect(() => {
     if (selectedBudget) {
       const fetchUsedAmount = async () => {
         try {
           // Haetaan budjettiin liittyvät tapahtumat
-          const { data, error } = await supabase
-            .from("budgets_expense_transactions")
-            .select("expense_transaction_id")
-            .eq("budget_id", selectedBudget.id);
-
-          if (error) throw error;
-
-          const expenseTransactionIds = data.map(
-            (transaction) => transaction.expense_transaction_id
-          );
-
-          // Jos tapahtumia on, haetaan niiden tiedot
-          if (expenseTransactionIds.length > 0) {
-            const { data: expenseTransactions, error: expenseError } =
-              await supabase
-                .from("expense_transactions")
-                .select("amount, date, category_id") // Haetaan summa, päivämäärä ja kategoria
-                .in("id", expenseTransactionIds);
-
-            if (expenseError) throw expenseError;
-
-            // Lasketaan yhteen käytetty summa
-            const totalUsedAmount = expenseTransactions.reduce(
-              (sum, transaction) => sum + transaction.amount,
-              0
-            );
-            setUsedAmount(totalUsedAmount);
-
-            // Tallennetaan tapahtumien tiedot erillisiin taulukoihin
-            const dates = expenseTransactions.map((transaction) => transaction.date);
-            const categories = expenseTransactions.map((transaction) => transaction.category_id);
-            const amounts = expenseTransactions.map((transaction) => transaction.amount);
-
-            setExpenseDates(dates); // Päivämäärät
-            setExpenseCategories(categories); // Kategoriat
-            setExpenseAmounts(amounts); // Summat
-          } else {
-            setUsedAmount(0);
-            setExpenseDates([]);
-            setExpenseCategories([]);
-            setExpenseAmounts([]);
-          }
+          const data = await getBudgetTransactions(selectedBudget.id, null, null); // Pidetään päivämäärät nyt nullina
+          setBudgetTransactions(data);
         } catch (error) {
           console.error("Tapahtumien haku epäonnistui:", error);
         }
@@ -174,25 +128,37 @@ const BudgetPage = () => {
             <>
               <h4>Budjetin tiedot:</h4>
               <p><strong>Budjetti:</strong> {selectedBudget.amount} €</p>
-              <p><strong>Kategoria:</strong> {selectedBudget.category}</p>
-              <p><strong>Aikaväli:</strong> {selectedBudget.startDate?.toLocaleDateString('fi-FI')} - {selectedBudget.endDate?.toLocaleDateString('fi-FI')}</p>
-              <p><strong>Jäljellä olevat päivät:</strong> {selectedBudget.endDate ? Math.max(0, Math.ceil((selectedBudget.endDate - new Date()) / (1000 * 60 * 60 * 24))) : '-'}</p>
-              <p><strong>Käytetty:</strong> {usedAmount} €</p>
-              <p><strong>Jäljellä:</strong> {selectedBudget.amount - usedAmount} €</p>
+              <p><strong>Kategoriat:</strong> {selectedBudget.categories.map((c) => // Luetteloidaan budjetin kategoriat
+                c == null ? "" :
+                (expenseCategories.filter(ec => ec.id === c)[0]?.category_name ||
+                incomeCategories.filter(ic => ic.id === c)[0]?.category_name)
+              ).join(", ")}
+              </p>
+              <p><strong>Aikaväli:</strong> {selectedBudget.repeating ?
+                findBudgetRepeating(selectedBudget.repeating).text :
+                `${new Date(selectedBudget.start_date).toLocaleDateString('fi-FI')} – ${new Date(selectedBudget.end_date).toLocaleDateString('fi-FI')}`
+              }
+              </p>
+              {!selectedBudget.repeating && (
+                <p><strong>Jäljellä olevat päivät:</strong> {selectedBudget.endDate ? Math.max(0, Math.ceil((selectedBudget.endDate - new Date()) / (1000 * 60 * 60 * 24))) : '-'}</p>
+              )}
+              <p><strong>Käytetty:</strong> {selectedBudget.used} €</p>
+              <p><strong>Jäljellä:</strong> {selectedBudget.amount - selectedBudget.used} €</p>
 
-              {/* progress bar näyttää jäljellä olevan budjetin */}
+              {/* Progress bar näyttää jäljellä olevan budjetin */}
               <div className="progress my-3">
-  <div
-    className="progress-bar bg-success"
-    role="progressbar"
-    style={{ width: `${((selectedBudget.amount - usedAmount) / selectedBudget.amount) * 100}%` }}
-    aria-valuenow={selectedBudget.amount - usedAmount}
-    aria-valuemin="0"
-    aria-valuemax={selectedBudget.amount}
-  >
-    {Math.round(((selectedBudget.amount - usedAmount) / selectedBudget.amount) * 100)} %
-  </div>
-</div>
+                <div
+                  className="progress-bar bg-success"
+                  role="progressbar"
+                  style={{ width: `${((selectedBudget.amount - selectedBudget.used) / selectedBudget.amount) * 100}%` }}
+                  aria-valuenow={selectedBudget.amount - selectedBudget.used}
+                  aria-valuemin="0"
+                  aria-valuemax={selectedBudget.amount}
+                >
+                  {Math.round(((selectedBudget.amount - selectedBudget.used) / selectedBudget.amount) * 100)} %
+                </div>
+              </div>
+
               {/* Piirakkadiagrammi budjetin käytöstä */}
               <div style={{ height: "300px" }}>
                 <Doughnut
@@ -200,7 +166,7 @@ const BudgetPage = () => {
                     labels: ["Jäljellä", "Käytetty"], // Otsikot segmentteihin
                     datasets: [
                       {
-                        data: [selectedBudget.amount - usedAmount, usedAmount], // Arvot (jäljellä oleva vs. käytetty)
+                        data: [selectedBudget.amount - selectedBudget.used, selectedBudget.used], // Arvot (jäljellä oleva vs. käytetty)
                         backgroundColor: ["#36A2EB", "#FF6384"], // Värit segmenteille
                         hoverBackgroundColor: ["#36A2EB", "#FF6384"], // Värit, kun osoitin on segmentin päällä
                       },
@@ -213,35 +179,33 @@ const BudgetPage = () => {
                 />
               </div>
 
-              
-
-
               {/* Näytetään tapahtumatiedot taulukossa */}
-  <h4>Budjetin tapahtumat:</h4>
-<table className="table">
-  <thead>
-    <tr>
-      <th>Päivämäärä</th>
-      <th>Kategoria</th>
-      <th>Summa (€)</th>
-    </tr>
-  </thead>
-  <tbody>
-    {expenseDates.map((date, index) => (
-      <tr key={index}>
-        <td>{date}</td>
-        <td>{expenseCategories[index]}</td>
-        <td>{expenseAmounts[index]} €</td>
-      </tr>
-    ))}
-  </tbody>
-</table>
-
+              {/* Tässä voisi käyttää myös TransactionListiä */}
+              <h4>Budjetin tapahtumat:</h4>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Päivämäärä</th>
+                    <th>Kategoria</th>
+                    <th>Summa (€)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {budgetTransactions.map((tr, index) => (
+                    <tr key={index}>
+                      <td>{tr.date}</td>
+                      <td>{(expenseCategories.filter(ec => ec.id === tr.category_id)[0]?.category_name ||
+                              incomeCategories.filter(ic => ic.id === tr.category_id)[0]?.category_name)}</td>
+                      <td>{tr.amount} €</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </>
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="danger" onClick={() => handleDelete(selectedBudget.id)}>
+          <Button variant="danger" onClick={() => setShowDeleteConfirmPopup(true)}>
             Poista budjetti
           </Button>
         </Modal.Footer>

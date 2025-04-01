@@ -1,8 +1,15 @@
 import { Button, Card, Col } from "react-bootstrap";
 import { ChevronRight } from "react-bootstrap-icons";
 import { findBudgetRepeating } from "../constants/BudgetRepeating";
+import { useContext, useEffect, useState } from "react";
+import { CategoryContext } from "../context/CategoryContext";
+import { AccountContext } from "../context/AccountContext";
+import { BudgetContext } from "../context/BudgetContext";
 
 const BudgetListItem = ({ budget, onAction }) => {
+  const { expenseCategories, incomeCategories } = useContext(CategoryContext);
+  const { accounts } = useContext(AccountContext);
+
   return (
     <Col key={budget.id} xs={12} md={6} lg={4}>
       <Card className="border-0 shadow-sm rounded-3 bg-white">
@@ -10,17 +17,30 @@ const BudgetListItem = ({ budget, onAction }) => {
           <div className="d-flex justify-content-between">
             <h5 className="fw-bold text-dark">{budget.budget_name}</h5>
           </div>
-          <p className="text-dark"></p> {/* sisennys */}
-          <p className="text-dark">Summa: {budget.amount} €</p>
-          <p className="text-dark">Kategoria: {budget.categories} </p>
-          <Col xs="3" className="text-muted">
+          <p className="text-dark fs-4">{budget.amount} €</p>
+          <p className="fst-italic">
             {budget.repeating ?
               findBudgetRepeating(budget.repeating).text :
-              `${budget.start_date} – ${budget.end_date}`
+              `${new Date(budget.start_date).toLocaleDateString('fi-FI')} – ${new Date(budget.end_date).toLocaleDateString('fi-FI')}`
             }
-          </Col>
+          </p>
+          <p className="text-dark">
+            <span className="fw-bold">Kategoriat: </span>{budget.categories.map((c) => // Luetteloidaan budjetin kategoriat
+              c == null ? "" :
+              (expenseCategories.filter(ec => ec.id === c)[0]?.category_name ||
+              incomeCategories.filter(ic => ic.id === c)[0]?.category_name)
+            ).join(", ")}
+          </p>
+          <p className="text-dark">
+            <span className="fw-bold">Tilit: </span>{budget.accounts.map((a) => { // Luetteloidaan budjetin tilit
+              if (a == null) return "";
+              let account = accounts.filter(acc => acc.id === a)[0];
+              return !account ? "" : account.account_name ? account.account_name : account.account_number;
+            }).join(", ")}
+          </p>
+          
 
-          {/* progress bar */}
+          {/* Progress bar */}
           <div className="progress my-2" style={{ height: "8px" }}>
             <div 
               className="progress-bar bg-success" 
@@ -32,8 +52,6 @@ const BudgetListItem = ({ budget, onAction }) => {
             />
           </div>
           <p className="text-muted">Käytetty: {budget.used} € / {budget.amount} €</p>
-          
-          <small className="text-muted">{budget.startDate ? budget.startDate.toLocaleDateString('fi-FI') : ''} - {budget.endDate ? budget.endDate.toLocaleDateString('fi-FI') : ''}</small>
           
         </Card.Body>
         <Card.Footer className="bg-white d-flex justify-content-between">
