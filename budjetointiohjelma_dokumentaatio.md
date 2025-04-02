@@ -6,7 +6,6 @@
 
 ### Asennus
 
-
 1. Lataa projektin tiedostot koneellesi
 2. Avaa komentokehote ja siirry kansioon, jossa projektisi on
 3. Suorita ```npm install``` ([Node.js](https://nodejs.org/en) vaaditaan)
@@ -72,35 +71,35 @@ Sovelluksen ensimmäinen sivu. Sisältää linkit [rekisteröitymiseen](#rekiste
 
 ##### Budgettisivu – BudgetPage
 
-
-
-##### Budjetin luonti – CreateBudget
-
-
+Luettelo budjeteista, uuden budjetin luontinäkymä ja koko näytön kokonainen Modal budjetin tietojen tarkasteluun ja poistamiseen. Budjettien luettelo luodaan [BudgetListItem](#budjettiluettelon-alkio--budgetlistitem)-elementeillä.
 
 ##### Etusivu – Dashboard
 
+Tilastoja pankkitapahtumista ja niiden kategorioista piirakkakaaviossa (\<Pie>) ja pylväskaaviossa (\<Bar>). Näiden alla luettelo pankkitapahtumista ([\<TransactionList>](#pankkitapahtumaluettelo--transactionlist)). [AccountSelectionModule](#ensimmäisen-tilin-luonti--accountselectionmodule) näytetään kun käyttäjä kirjautuu ensimmäistä kertaa ohjelmaan.
 
+##### Kategorioiden muokkaus – EditCategories
+
+Luettelo luoduista kategorioista ja Modal niiden tietojen muokkaamiseen ja poistamiseen.
 
 ##### Kirjautuminen – Login
 
+Lomake kirjautumiseen ja unohtuneen salasanan palautuslinkin lähettämiseen. Jos käyttäjä on jo kirjautunut, käyttäjä ohjataan suoraan [Dashboardiin](#etusivu--dashboard).
 
+Kirjautumiseen käytetään Supabasen ```auth.signInWithPassword```-funktiota. Salasanan palautukseen käytetään ```auth.resetPasswordForEmail```-funktiota.
 
 ##### Rekisteröityminen – Register
 
-
-
-##### Asetukset – Settings
-
-
+Lomake rekisteröitymiseen. Rekisteröitymiseen käytetään Supabasen ```auth.signUp```-funktiota.
 
 ##### Pankkitapahtumien luonti – TransactionImport
 
-
+Sivu sisältää kaksi tapaa luoda pankkitapahtumia; kirjoittamalla niiden tiedot itse ([\<TransactionEditView>](#pankkitapahtuman-muokkausnäkymä--transactioneditview)) tai tuomalla niiden tiedot CSV-tiedostosta ([\<TransactionFileImport>](#pankkitapahtuman-csv-tiedoston-vienti--transactionfileimport)).
 
 #### Toiminnot (actions)
 
+##### CSV-tiedoston lukeminen – CSVParse
 
+Ohjelma pystyy automaattisesti lukemaan tarvittavat tiedot Nordean, S-Pankin ja Osuuspankin verkkopankeista tuoduista CSV-tiedostoista. Se pystyy tulkitsemaan sekä yyyy-mm-dd-päivämäärät että dd.mm.yyyy-päivämäärät.
 
 #### Komponentit (components)
 
@@ -113,6 +112,10 @@ Sovelluksen ensimmäinen sivu. Sisältää linkit [rekisteröitymiseen](#rekiste
 
 
 ##### Budjettiluettelon alkio – BudgetListItem
+
+
+
+##### Budjetin luonti – CreateBudget
 
 
 
